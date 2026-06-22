@@ -195,20 +195,27 @@ const newPos = { x: clampedX, y: clampedY }
                   style={{ left: x, top: `calc(50% + ${y}px)` }}
                 >
                   {hoveredId === e.id && (
-                    <div className={isAbove ? `${styles.tooltip} ${styles.tooltipTop}` : `${styles.tooltip} ${styles.tooltipBottom}`}>
-                      <p className={styles.tooltipDate}>{e.date}</p>
-                      <p className={styles.tooltipTitle}>{e.title}</p>
-                      {charList.length > 0 && (
-                        <div className={styles.tooltipChars}>
-                          {charList.map(c => (
-                            <span key={c.id} className={styles.tooltipChar} style={{ borderColor: c.accent, color: c.accent }}>
-                              {c.name}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
+  <div
+    className={isAbove ? `${styles.tooltip} ${styles.tooltipTop}` : `${styles.tooltip} ${styles.tooltipBottom}`}
+    style={{
+      background: `linear-gradient(160deg, ${e.color || '#1e1e30'}99 0%, #161618 40%)`,
+      borderColor: e.color || 'var(--purple)',
+      boxShadow: `0 0 16px 4px ${e.color || '#7F77DD'}44`
+    }}
+  >
+<p className={styles.tooltipDate} style={{ color: e.color || 'var(--purple)' }}>{e.date}</p>
+    <p className={styles.tooltipTitle}>{e.title}</p>
+    {charList.length > 0 && (
+      <div className={styles.tooltipChars}>
+        {charList.map(c => (
+          <span key={c.id} className={styles.tooltipChar} style={{ borderColor: c.accent, color: c.accent }}>
+            {c.name}
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
                   <div
                     className={styles.dot}
