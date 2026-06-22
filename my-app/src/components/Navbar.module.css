@@ -1,0 +1,41 @@
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem 2.5rem;
+  background: rgba(14,14,15,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--border);
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; letter-spacing: 0.06em;
+  color: var(--text); text-decoration: none;
+}
+
+.links {
+  display: flex; gap: 2rem; align-items: center;
+}
+
+.links a {
+  font-size: 13px; color: var(--text3);
+  text-decoration: none; letter-spacing: 0.04em;
+  transition: color 0.2s;
+}
+
+.links a:hover { color: var(--text); }
+
+.editBtn {
+  font-size: 12px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border2);
+  background: none;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.04em;
+}
+
+.editBtn:hover { color: var(--text); border-color: var(--purple); }
+.editBtnActive { color: var(--purple) !important; border-color: var(--purple) !important; }

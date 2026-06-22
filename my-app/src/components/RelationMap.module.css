@@ -1,0 +1,7 @@
+.wrap {
+  border: 0.5px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  background: var(--bg2); padding: 1.5rem;
+}
+
+.svg { width: 100%; display: block; }

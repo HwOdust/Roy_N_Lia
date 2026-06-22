@@ -1,0 +1,95 @@
+.section {
+  padding: 5rem 2.5rem;
+  border-bottom: 0.5px solid var(--border);
+  max-width: 960px; margin: 0 auto; width: 100%;
+}
+
+.sectionLabel {
+  font-size: 10px; letter-spacing: 0.2em;
+  color: var(--text3); text-transform: uppercase;
+  margin-bottom: 3rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.sectionLabel::after {
+  content: ''; flex: 1;
+  height: 0.5px; background: var(--border);
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.worldGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.worldCard {
+  padding: 1.5rem;
+  border: 0.5px solid var(--border);
+  border-radius: 14px; background: var(--bg2);
+  transition: border-color 0.2s;
+}
+.worldCard:hover { border-color: var(--border2); }
+
+.worldIcon { font-size: 22px; color: var(--purple); margin-bottom: 1rem; }
+.worldTitle { font-size: 14px; font-weight: 500; margin-bottom: 0.5rem; color: var(--text); }
+.worldDesc { font-size: 12px; color: var(--text2); line-height: 1.7; }
+
+.relIntro {
+  font-size: 13px; color: var(--text2);
+  line-height: 1.8; margin-bottom: 2.5rem; max-width: 480px;
+}
+
+.footer {
+  text-align: center; padding: 3rem 2rem;
+  font-size: 12px; color: var(--text3); letter-spacing: 0.06em;
+}
+
+.addCard {
+  border: 0.5px dashed var(--border2);
+  border-radius: 16px;
+  aspect-ratio: 3/4;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; cursor: pointer;
+  color: var(--text3); font-size: 13px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.addCard:hover { border-color: var(--purple); color: var(--purple); }
+.addCard i { font-size: 24px; }
+
+.modalBg {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.passwordModal {
+  background: var(--bg2); border: 0.5px solid var(--border2);
+  border-radius: 16px; padding: 2rem;
+  width: 320px; display: flex; flex-direction: column; gap: 1rem;
+}
+
+.passwordTitle {
+  font-size: 15px; font-weight: 500; color: var(--text);
+}
+
+.passwordInput {
+  background: var(--bg3); border: 0.5px solid var(--border2);
+  border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif;
+}
+.passwordInput:focus { outline: none; border-color: var(--purple); }
+
+.passwordError { font-size: 12px; color: #e05555; }
+
+.passwordBtn {
+  padding: 10px; border-radius: 8px;
+  background: var(--purple-dark); border: none;
+  color: #fff; font-size: 14px; cursor: pointer; transition: opacity 0.2s;
+}
+.passwordBtn:hover { opacity: 0.85; }
