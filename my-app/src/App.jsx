@@ -95,15 +95,24 @@ export default function App() {
         made with <span style={{ color: 'var(--purple)' }}>♡</span> — Unnamed World
       </footer>
 
-{selectedChar && (
-  <CharModal
-    char={selectedChar}
-    editMode={editMode}
-    onClose={() => setSelectedChar(null)}
-    onUpdate={fetchData}
-  />
-)}
+      {selectedChar && (
+        <CharModal
+          char={selectedChar}
+          editMode={editMode}
+          onClose={() => setSelectedChar(null)}
+          onUpdate={fetchData}
+        />
+      )}
 
+      {selectedEvent && (
+        <TimelineModal
+          event={selectedEvent}
+          characters={characters}
+          editMode={editMode}
+          onClose={() => setSelectedEvent(null)}
+          onUpdate={fetchData}
+        />
+      )}
 
       {showPasswordModal && (
         <div className={styles.modalBg} onClick={(e) => e.target === e.currentTarget && setShowPasswordModal(false)}>
