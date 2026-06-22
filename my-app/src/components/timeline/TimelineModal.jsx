@@ -5,10 +5,10 @@ import styles from './TimelineModal.module.css'
 export default function TimelineModal({ event, characters, editMode, onClose, onUpdate }) {
   const isNew = event?._new
   const [viewOnly, setViewOnly] = useState(false)
-  const [form, setForm] = useState({
-    title: '', description: '', date: '', date_sort: 0, characters: [], color: '#7F77DD'
-  })
-
+const [form, setForm] = useState({
+  title: '', description: '', date: '', date_sort: 0, characters: [], color: '#7F77DD',
+  x_offset: event?.initialX ?? 0
+})
   useEffect(() => {
     if (!isNew && event) {
       setForm({
@@ -37,14 +37,17 @@ export default function TimelineModal({ event, characters, editMode, onClose, on
     })
   }
 
-  async function handleSave() {
-    const payload = {
-      title: form.title,
-      description: form.description,
-      date: form.date,
-      characters: form.characters,
-      color: form.color
-    }
+async function handleSave() {
+  const payload = {
+  title: form.title,
+  description: form.description,
+  date: form.date,
+  characters: form.characters,
+  color: form.color,
+  x_offset: isNew ? (event?.initialX ?? 0) : undefined,
+  y_offset: isNew ? 0 : undefined
+}
+
     if (isNew) {
       await supabase.from('timeline_events').insert([payload])
     } else {

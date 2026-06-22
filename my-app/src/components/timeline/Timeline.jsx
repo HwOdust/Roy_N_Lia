@@ -157,7 +157,7 @@ const newPos = { x: clampedX, y: clampedY }
           ))}
         </div>
         {editMode && (
-          <button className={styles.addBtn} onClick={onAdd}>
+   <button className={styles.addBtn} onClick={() => onAdd(-offset + (containerRef.current?.offsetWidth || 800) - PADDING)}>
             <i className="ti ti-plus" aria-hidden="true" /> 사건 추가
           </button>
         )}

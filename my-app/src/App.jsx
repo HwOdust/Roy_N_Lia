@@ -82,7 +82,7 @@ export default function App() {
             characters={characters}
             editMode={editMode}
             onEdit={setSelectedEvent}
-            onAdd={() => setSelectedEvent({ _new: true })}
+onAdd={(x) => setSelectedEvent({ _new: true, initialX: x })}
             onUpdate={fetchData}
           />
         } />
