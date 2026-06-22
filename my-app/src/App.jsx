@@ -1,38 +1,36 @@
 import { useState, useEffect } from 'react'
-import {
-  DndContext, closestCenter, PointerSensor, useSensor, useSensors
-} from '@dnd-kit/core'
-import {
-  SortableContext, rectSortingStrategy, arrayMove
-} from '@dnd-kit/sortable'
+import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import CharCard from './components/CharCard'
-import CharModal from './components/CharModal'
-import RelationMap from './components/RelationMap'
+import CharModal from './components/char/CharModal'
+import TimelineModal from './components/timeline/TimelineModal'
+import Home from './pages/Home'
+import Characters from './pages/Characters'
+import World from './pages/World'
+import TimelinePage from './pages/TimelinePage'
+import Relations from './pages/Relations'
 import { supabase } from './supabase'
 import styles from './App.module.css'
 
 export default function App() {
   const [characters, setCharacters] = useState([])
   const [worldCards, setWorldCards] = useState([])
+  const [timelineEvents, setTimelineEvents] = useState([])
   const [selectedChar, setSelectedChar] = useState(null)
+  const [selectedEvent, setSelectedEvent] = useState(null)
   const [editMode, setEditMode] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState(false)
-
-  const sensors = useSensors(useSensor(PointerSensor, {
-    activationConstraint: { distance: 8 }
-  }))
 
   useEffect(() => { fetchData() }, [])
 
   async function fetchData() {
     const { data: chars } = await supabase.from('characters').select('*').order('order_index')
     const { data: worlds } = await supabase.from('world_cards').select('*').order('order_index')
+    const { data: events } = await supabase.from('timeline_events').select('*').order('date_sort')
     if (chars) setCharacters(chars)
     if (worlds) setWorldCards(worlds)
+    if (events) setTimelineEvents(events)
   }
 
   function handleEditClick() {
@@ -54,73 +52,44 @@ export default function App() {
     }
   }
 
-  async function handleDragEnd(event) {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-
-    const oldIndex = characters.findIndex(c => c.id === active.id)
-    const newIndex = characters.findIndex(c => c.id === over.id)
-    const newOrder = arrayMove(characters, oldIndex, newIndex)
-    setCharacters(newOrder)
-
-    await Promise.all(
-      newOrder.map((c, i) =>
-        supabase.from('characters').update({ order_index: i }).eq('id', c.id)
-      )
-    )
-  }
-
   return (
     <div>
       <Navbar editMode={editMode} onEditClick={handleEditClick} />
-      <Hero />
 
-      <section className={styles.section} id="characters">
-        <p className={styles.sectionLabel}>Characters</p>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={characters.map(c => c.id)} strategy={rectSortingStrategy}>
-            <div className={styles.gallery}>
-              {characters.map((c) => (
-                <CharCard
-                  key={c.id} char={c}
-                  onClick={setSelectedChar}
-                  editMode={editMode}
-                  onUpdate={fetchData}
-                />
-              ))}
-              {editMode && (
-                <div className={styles.addCard} onClick={() => setSelectedChar({ _new: true })}>
-                  <i className="ti ti-plus" aria-hidden="true" />
-                  <span>추가</span>
-                </div>
-              )}
-            </div>
-          </SortableContext>
-        </DndContext>
-      </section>
-
-      <section className={styles.section} id="world">
-        <p className={styles.sectionLabel}>World &amp; Setting</p>
-        <div className={styles.worldGrid}>
-          {worldCards.map((w) => (
-            <div key={w.id} className={styles.worldCard}>
-              <div className={styles.worldIcon}>
-                <i className={`ti ${w.icon}`} aria-hidden="true" />
-              </div>
-              <p className={styles.worldTitle}>{w.title}</p>
-              <p className={styles.worldDesc}>{w.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.section} id="relations">
-        <p className={styles.sectionLabel}>Relationship Map</p>
-        <p className={styles.relIntro}>
-          캐릭터들 사이의 관계를 시각적으로 정리했어요.
-        </p>
-        <RelationMap characters={characters} />
-      </section>
+      <Routes>
+        <Route path="/" element={
+          <Home
+            characters={characters}
+            worldCards={worldCards}
+            timelineEvents={timelineEvents}
+          />
+        } />
+        <Route path="/characters" element={
+          <Characters
+            characters={characters}
+            setCharacters={setCharacters}
+            editMode={editMode}
+            onCharClick={setSelectedChar}
+            onUpdate={fetchData}
+          />
+        } />
+        <Route path="/world" element={
+          <World worldCards={worldCards} />
+        } />
+        <Route path="/timeline" element={
+          <TimelinePage
+            events={timelineEvents}
+            characters={characters}
+            editMode={editMode}
+            onEdit={setSelectedEvent}
+            onAdd={() => setSelectedEvent({ _new: true })}
+            onUpdate={fetchData}
+          />
+        } />
+        <Route path="/relations" element={
+          <Relations characters={characters} />
+        } />
+      </Routes>
 
       <footer className={styles.footer}>
         made with <span style={{ color: 'var(--purple)' }}>♡</span> — Unnamed World
@@ -131,11 +100,11 @@ export default function App() {
     char={selectedChar}
     editMode={editMode}
     onClose={() => setSelectedChar(null)}
-    onUpdate={() => {
-  fetchData()
-}}
+    onUpdate={fetchData}
   />
 )}
+
+
       {showPasswordModal && (
         <div className={styles.modalBg} onClick={(e) => e.target === e.currentTarget && setShowPasswordModal(false)}>
           <div className={styles.passwordModal}>

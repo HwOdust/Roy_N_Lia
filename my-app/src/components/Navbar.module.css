@@ -24,6 +24,7 @@
 }
 
 .links a:hover { color: var(--text); }
+.activeLink { color: var(--text) !important; }
 
 .editBtn {
   font-size: 12px;
