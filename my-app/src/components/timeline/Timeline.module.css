@@ -41,7 +41,7 @@
 .arrow:hover { border-color: var(--purple); color: var(--purple); }
 
 .viewport {
-  flex: 1; overflow: hidden; position: relative;
+  flex: 1; overflow: hidden; position: relative; min-height: 600px;
 }
 
 .barWrap {

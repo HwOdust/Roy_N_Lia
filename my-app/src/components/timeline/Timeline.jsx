@@ -24,7 +24,7 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
 
   const BAR_WIDTH = Math.max(1200, sorted.length * 200)
   const PADDING = 100
-  const BAR_HEIGHT = 400
+  const BAR_HEIGHT = 600
 
   function getBaseX(val) {
     return PADDING + ((val - min) / range) * (BAR_WIDTH - PADDING * 2)
