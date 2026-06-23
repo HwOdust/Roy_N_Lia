@@ -159,3 +159,15 @@
 .row span:last-child {
   white-space: pre-wrap;
 }
+
+.colorRow {
+  display: flex; align-items: center; gap: 0.5rem;
+}
+
+.paletteBtn {
+  background: none; border: 0.5px solid var(--border2);
+  border-radius: 8px; padding: 6px 10px;
+  color: var(--text3); cursor: pointer; font-size: 16px;
+  transition: all 0.2s;
+}
+.paletteBtn:hover { border-color: var(--purple); color: var(--purple); }

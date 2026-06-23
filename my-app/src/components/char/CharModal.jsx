@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../supabase'
+import PalettePicker from '../palette/PalettePicker'
 import styles from './CharModal.module.css'
 
-export default function CharModal({ char, editMode, onClose, onUpdate }) {
+export default function CharModal({ char, editMode, paletteTags, onClose, onUpdate }) {
   const isNew = char?._new
   const [form, setForm] = useState({
     name: '', role: '', initial: '',
     description: '', color: '#1e1e30', accent: '#AFA9EC',
     fields: []
   })
+  const [showPaletteColor, setShowPaletteColor] = useState(false)
+  const [showPaletteAccent, setShowPaletteAccent] = useState(false)
+  const colorBtnRef = useRef(null)
+  const accentBtnRef = useRef(null)
 
   useEffect(() => {
     if (!isNew && char) {
@@ -42,20 +47,21 @@ export default function CharModal({ char, editMode, onClose, onUpdate }) {
     setForm({ ...form, fields })
   }
 
-async function handleSave() {
-  const payload = {
-    name: form.name, role: form.role, initial: form.initial,
-    description: form.description, color: form.color, accent: form.accent,
-    fields: form.fields.filter(f => f.key || f.value)
+  async function handleSave() {
+    const payload = {
+      name: form.name, role: form.role, initial: form.initial,
+      description: form.description, color: form.color, accent: form.accent,
+      fields: form.fields.filter(f => f.key || f.value)
+    }
+    if (isNew) {
+      await supabase.from('characters').insert([payload])
+    } else {
+      await supabase.from('characters').update(payload).eq('id', char.id)
+    }
+    onUpdate()
+    onClose()
   }
-  if (isNew) {
-    await supabase.from('characters').insert([payload])
-  } else {
-    await supabase.from('characters').update(payload).eq('id', char.id)
-  }
-  onUpdate()
-  onClose()
-}
+
   async function handleDelete() {
     if (!confirm(`${char.name}을(를) 삭제할까요?`)) return
     await supabase.from('characters').delete().eq('id', char.id)
@@ -69,19 +75,32 @@ async function handleSave() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [onClose])
 
+  useEffect(() => {
+    if (!showPaletteColor && !showPaletteAccent) return
+    function handleClick(e) {
+      if (!e.target.closest('[data-palette]') &&
+        !colorBtnRef.current?.contains(e.target) &&
+        !accentBtnRef.current?.contains(e.target)) {
+        setShowPaletteColor(false)
+        setShowPaletteAccent(false)
+      }
+    }
+    window.addEventListener('mousedown', handleClick)
+    return () => window.removeEventListener('mousedown', handleClick)
+  }, [showPaletteColor, showPaletteAccent])
+
   if (!char) return null
 
   return (
-<div className={styles.bg} onClick={(e) => e.target === e.currentTarget && onClose()} style={{ background: 'rgba(0,0,0,0.72)' }}>
-  <div
-    className={styles.modal}
-    style={{
-      background: (char.color && (!editMode || char._viewOnly))
-        ? `linear-gradient(160deg, ${char.color} 0%, #161618 35%)`
-        : undefined
-    }}
-  >
-
+    <div className={styles.bg} onClick={(e) => e.target === e.currentTarget && onClose()} style={{ background: 'rgba(0,0,0,0.72)' }}>
+      <div
+        className={styles.modal}
+        style={{
+          background: (char.color && (!editMode || char._viewOnly))
+            ? `linear-gradient(160deg, ${char.color} 0%, #161618 35%)`
+            : undefined
+        }}
+      >
         <button className={styles.close} onClick={onClose} aria-label="닫기">
           <i className="ti ti-x" aria-hidden="true" />
         </button>
@@ -103,10 +122,20 @@ async function handleSave() {
                 <textarea className={styles.input} name="description" value={form.description} onChange={handleChange} rows={3} />
               </label>
               <label className={styles.label}>카드 배경색
-                <input type="color" name="color" value={form.color} onChange={handleChange} className={styles.colorInput} />
+                <div className={styles.colorRow}>
+                  <input type="color" name="color" value={form.color} onChange={handleChange} className={styles.colorInput} />
+                  <button ref={colorBtnRef} className={styles.paletteBtn} onClick={() => { setShowPaletteColor(p => !p); setShowPaletteAccent(false) }} type="button">
+                    <i className="ti ti-palette" />
+                  </button>
+                </div>
               </label>
               <label className={styles.label}>이니셜 색
-                <input type="color" name="accent" value={form.accent} onChange={handleChange} className={styles.colorInput} />
+                <div className={styles.colorRow}>
+                  <input type="color" name="accent" value={form.accent} onChange={handleChange} className={styles.colorInput} />
+                  <button ref={accentBtnRef} className={styles.paletteBtn} onClick={() => { setShowPaletteAccent(p => !p); setShowPaletteColor(false) }} type="button">
+                    <i className="ti ti-palette" />
+                  </button>
+                </div>
               </label>
             </div>
 
@@ -126,12 +155,12 @@ async function handleSave() {
                     onChange={(e) => updateField(i, 'key', e.target.value)}
                   />
                   <textarea
-  className={styles.input}
-  placeholder="내용"
-  value={f.value}
-  rows={3}
-  onChange={(e) => updateField(i, 'value', e.target.value)}
-/>
+                    className={styles.input}
+                    placeholder="내용"
+                    value={f.value}
+                    rows={3}
+                    onChange={(e) => updateField(i, 'value', e.target.value)}
+                  />
                   <button className={styles.removeFieldBtn} onClick={() => removeField(i)}>
                     <i className="ti ti-x" aria-hidden="true" />
                   </button>
@@ -162,7 +191,7 @@ async function handleSave() {
               </div>
             </div>
             <div className={styles.divider} />
-            {char.fields && char.fields.length > 0 ? (
+            {char.fields?.length > 0 ? (
               char.fields.map((f, i) => (
                 <div key={i} className={styles.row}>
                   <span className={styles.key}>{f.key}</span>
@@ -182,6 +211,32 @@ async function handleSave() {
           </>
         )}
       </div>
+
+      {showPaletteColor && (
+        <div data-palette>
+          <PalettePicker
+            paletteTags={paletteTags}
+            anchorRef={colorBtnRef}
+            onSelect={(color) => {
+              setForm(p => ({ ...p, color }))
+              setShowPaletteColor(false)
+            }}
+          />
+        </div>
+      )}
+
+      {showPaletteAccent && (
+        <div data-palette>
+          <PalettePicker
+            paletteTags={paletteTags}
+            anchorRef={accentBtnRef}
+            onSelect={(color) => {
+              setForm(p => ({ ...p, accent: color }))
+              setShowPaletteAccent(false)
+            }}
+          />
+        </div>
+      )}
     </div>
   )
 }

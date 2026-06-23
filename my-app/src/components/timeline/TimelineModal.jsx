@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../supabase'
+import PalettePicker from '../palette/PalettePicker'
 import styles from './TimelineModal.module.css'
 
-export default function TimelineModal({ event, characters, editMode, onClose, onUpdate }) {
+export default function TimelineModal({ event, characters, editMode, paletteTags, onClose, onUpdate }) {
   const isNew = event?._new
   const [viewOnly, setViewOnly] = useState(false)
-const [form, setForm] = useState({
-  title: '', description: '', date: '', date_sort: 0, characters: [], color: '#7F77DD',
-  x_offset: event?.initialX ?? 0
-})
+  const [showPalette, setShowPalette] = useState(false)
+  const colorBtnRef = useRef(null)
+  const [form, setForm] = useState({
+    title: '', description: '', date: '', date_sort: 0, characters: [], color: '#7F77DD'
+  })
+
   useEffect(() => {
     if (!isNew && event) {
       setForm({
@@ -37,17 +40,14 @@ const [form, setForm] = useState({
     })
   }
 
-async function handleSave() {
-  const payload = {
-  title: form.title,
-  description: form.description,
-  date: form.date,
-  characters: form.characters,
-  color: form.color,
-  x_offset: isNew ? (event?.initialX ?? 0) : undefined,
-  y_offset: isNew ? 0 : undefined
-}
-
+  async function handleSave() {
+    const payload = {
+      title: form.title,
+      description: form.description,
+      date: form.date,
+      characters: form.characters,
+      color: form.color
+    }
     if (isNew) {
       await supabase.from('timeline_events').insert([payload])
     } else {
@@ -69,6 +69,17 @@ async function handleSave() {
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [onClose])
+
+  useEffect(() => {
+    if (!showPalette) return
+    function handleClick(e) {
+      if (!e.target.closest('[data-palette]') && !colorBtnRef.current?.contains(e.target)) {
+        setShowPalette(false)
+      }
+    }
+    window.addEventListener('mousedown', handleClick)
+    return () => window.removeEventListener('mousedown', handleClick)
+  }, [showPalette])
 
   if (!event) return null
 
@@ -119,12 +130,21 @@ async function handleSave() {
               <label className={styles.label} style={{ gridColumn: '1 / -1' }}>사건명
                 <input className={styles.input} name="title" value={form.title} onChange={handleChange} />
               </label>
-              <label className={styles.label} style={{ gridColumn: '1 / -1' }}>날짜 표시 (자유롭게)
+              <label className={styles.label} style={{ gridColumn: '1 / -1' }}>날짜 표시
                 <input className={styles.input} name="date" placeholder="예: 900년 6월 22일" value={form.date} onChange={handleChange} />
               </label>
-
               <label className={styles.label}>색상
-                <input type="color" name="color" value={form.color} onChange={handleChange} className={styles.colorInput} />
+                <div className={styles.colorRow}>
+                  <input type="color" name="color" value={form.color} onChange={handleChange} className={styles.colorInput} />
+                  <button
+                    ref={colorBtnRef}
+                    className={styles.paletteBtn}
+                    onClick={() => setShowPalette(p => !p)}
+                    type="button"
+                  >
+                    <i className="ti ti-palette" />
+                  </button>
+                </div>
               </label>
               <label className={styles.label} style={{ gridColumn: '1 / -1' }}>설명
                 <textarea className={styles.input} name="description" value={form.description} onChange={handleChange} rows={3} />
@@ -154,6 +174,19 @@ async function handleSave() {
           </>
         )}
       </div>
+
+      {showPalette && (
+        <div data-palette>
+          <PalettePicker
+            paletteTags={paletteTags}
+            anchorRef={colorBtnRef}
+            onSelect={(color) => {
+              setForm(p => ({ ...p, color }))
+              setShowPalette(false)
+            }}
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -10,6 +10,7 @@ import TimelinePage from './pages/TimelinePage'
 import Relations from './pages/Relations'
 import { supabase } from './supabase'
 import styles from './App.module.css'
+import Palette from './pages/Palette'
 
 export default function App() {
   const [characters, setCharacters] = useState([])
@@ -22,6 +23,7 @@ export default function App() {
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState(false)
   const [timelineSettings, setTimelineSettings] = useState({ start_year: 0, end_year: 1000, zoom: 1 })
+  const [paletteTags, setPaletteTags] = useState([])
 
   useEffect(() => { fetchData() }, [])
 
@@ -30,10 +32,12 @@ async function fetchData() {
   const { data: worlds } = await supabase.from('world_cards').select('*').order('order_index')
   const { data: events } = await supabase.from('timeline_events').select('*').order('x_offset')
   const { data: settings } = await supabase.from('timeline_settings').select('*').limit(1).single()
+  const { data: palette } = await supabase.from('palette_tags').select('*').order('order_index')
   if (chars) setCharacters(chars)
   if (worlds) setWorldCards(worlds)
   if (events) setTimelineEvents(events)
   if (settings) setTimelineSettings(settings)
+  if (palette) setPaletteTags(palette)
 }
 
   function handleEditClick() {
@@ -89,33 +93,43 @@ onAdd={(x) => setSelectedEvent({ _new: true, initialX: x })}
             onUpdate={fetchData}
           />
         } />
-        <Route path="/relations" element={
-          <Relations characters={characters} />
-        } />
+<Route path="/relations" element={
+  <Relations characters={characters} />
+} />
+<Route path="/palette" element={
+  <Palette
+    paletteTags={paletteTags}
+    characters={characters}
+    editMode={editMode}
+    onUpdate={fetchData}
+  />
+} />
       </Routes>
 
       <footer className={styles.footer}>
         made with <span style={{ color: 'var(--purple)' }}>♡</span> — Unnamed World
       </footer>
 
-      {selectedChar && (
-        <CharModal
-          char={selectedChar}
-          editMode={editMode}
-          onClose={() => setSelectedChar(null)}
-          onUpdate={fetchData}
-        />
-      )}
+{selectedChar && (
+  <CharModal
+    char={selectedChar}
+    editMode={editMode}
+    paletteTags={paletteTags}
+    onClose={() => setSelectedChar(null)}
+    onUpdate={fetchData}
+  />
+)}
 
-      {selectedEvent && (
-        <TimelineModal
-          event={selectedEvent}
-          characters={characters}
-          editMode={editMode}
-          onClose={() => setSelectedEvent(null)}
-          onUpdate={fetchData}
-        />
-      )}
+{selectedEvent && (
+  <TimelineModal
+    event={selectedEvent}
+    characters={characters}
+    editMode={editMode}
+    paletteTags={paletteTags}
+    onClose={() => setSelectedEvent(null)}
+    onUpdate={fetchData}
+  />
+)}
 
       {showPasswordModal && (
         <div className={styles.modalBg} onClick={(e) => e.target === e.currentTarget && setShowPasswordModal(false)}>

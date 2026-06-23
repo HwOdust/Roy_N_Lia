@@ -10,11 +10,12 @@ export default function Navbar({ editMode, onEditClick }) {
         <NavLink to="/world" className={({ isActive }) => isActive ? styles.activeLink : ''}>World</NavLink>
         <NavLink to="/timeline" className={({ isActive }) => isActive ? styles.activeLink : ''}>Timeline</NavLink>
         <NavLink to="/relations" className={({ isActive }) => isActive ? styles.activeLink : ''}>Relations</NavLink>
+        <NavLink to="/palette" className={({ isActive }) => isActive ? styles.activeLink : ''}>Palette</NavLink>
         <button
           className={`${styles.editBtn} ${editMode ? styles.editBtnActive : ''}`}
           onClick={onEditClick}
         >
-          {editMode ? '편집 모드' : '뷰 모드'}
+          {editMode ? '편집모드' : '뷰모드'}
         </button>
       </div>
     </nav>
