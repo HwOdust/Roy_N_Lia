@@ -27,8 +27,8 @@ export default function App() {
   async function fetchData() {
     const { data: chars } = await supabase.from('characters').select('*').order('order_index')
     const { data: worlds } = await supabase.from('world_cards').select('*').order('order_index')
-    const { data: events } = await supabase.from('timeline_events').select('*').order('date_sort')
-    if (chars) setCharacters(chars)
+const { data: events } = await supabase.from('timeline_events').select('*').order('x_offset')    
+if (chars) setCharacters(chars)
     if (worlds) setWorldCards(worlds)
     if (events) setTimelineEvents(events)
   }

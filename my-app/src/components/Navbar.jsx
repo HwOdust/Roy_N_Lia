@@ -14,7 +14,7 @@ export default function Navbar({ editMode, onEditClick }) {
           className={`${styles.editBtn} ${editMode ? styles.editBtnActive : ''}`}
           onClick={onEditClick}
         >
-          {editMode ? '편집 종료' : '편집'}
+          {editMode ? '편집 모드' : '뷰 모드'}
         </button>
       </div>
     </nav>
