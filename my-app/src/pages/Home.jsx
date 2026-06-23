@@ -66,6 +66,14 @@ export default function Home({ characters, worldCards, timelineEvents }) {
           </div>
           <p className={styles.previewSub}>관계도 보기 →</p>
         </div>
+
+        <div className={styles.previewCard} onClick={() => navigate('/palette')}>
+  <p className={styles.previewLabel}>Palette</p>
+  <div className={styles.relPreview}>
+    <i className="ti ti-palette" aria-hidden="true" />
+  </div>
+  <p className={styles.previewSub}>팔레트 보기 →</p>
+</div>
       </div>
     </div>
   )

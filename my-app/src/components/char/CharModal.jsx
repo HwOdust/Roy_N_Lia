@@ -47,21 +47,45 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
     setForm({ ...form, fields })
   }
 
-  async function handleSave() {
-    const payload = {
-      name: form.name, role: form.role, initial: form.initial,
-      description: form.description, color: form.color, accent: form.accent,
-      fields: form.fields.filter(f => f.key || f.value)
-    }
-    if (isNew) {
-      await supabase.from('characters').insert([payload])
-    } else {
-      await supabase.from('characters').update(payload).eq('id', char.id)
-    }
-    onUpdate()
-    onClose()
+async function handleSave() {
+  const payload = {
+    name: form.name, role: form.role, initial: form.initial,
+    description: form.description, color: form.color, accent: form.accent,
+    fields: form.fields.filter(f => f.key || f.value)
   }
-
+  if (isNew) {
+    const { data: newChar } = await supabase.from('characters').insert([payload]).select().single()
+    if (newChar) {
+      await supabase.from('palette_tags').insert([{
+        name: newChar.name,
+        color: newChar.accent,
+        type: 'character',
+        character_id: newChar.id,
+        order_index: newChar.order_index ?? 0
+      }])
+    }
+  }  else {
+  await supabase.from('characters').update(payload).eq('id', char.id)
+  const { data: existing } = await supabase.from('palette_tags').select('id').eq('character_id', char.id).single()
+  if (existing) {
+    await supabase.from('palette_tags').update({
+      name: form.name,
+      color: form.accent,
+      order_index: char.order_index ?? 0
+    }).eq('character_id', char.id)
+  } else {
+    await supabase.from('palette_tags').insert([{
+      name: form.name,
+      color: form.accent,
+      type: 'character',
+      character_id: char.id,
+      order_index: char.order_index ?? 0
+    }])
+  }
+}
+  onUpdate()
+  onClose()
+}
   async function handleDelete() {
     if (!confirm(`${char.name}을(를) 삭제할까요?`)) return
     await supabase.from('characters').delete().eq('id', char.id)
@@ -190,8 +214,15 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
                 <p className={styles.role}>{char.role}</p>
               </div>
             </div>
-            <div className={styles.divider} />
-            {char.fields?.length > 0 ? (
+<div className={styles.divider} />
+<div className={styles.row}>
+  <span className={styles.key}>이니셜 색</span>
+  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: char.accent, display: 'inline-block', flexShrink: 0 }} />
+    <span style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text2)' }}>{char.accent?.toUpperCase()}</span>
+  </span>
+</div>
+{char.fields?.length > 0 ? (
               char.fields.map((f, i) => (
                 <div key={i} className={styles.row}>
                   <span className={styles.key}>{f.key}</span>
