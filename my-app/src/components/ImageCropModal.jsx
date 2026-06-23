@@ -3,7 +3,7 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import styles from './ImageCropModal.module.css'
 
-export default function ImageCropModal({ file, onCropDone, onCancel }) {
+export default function ImageCropModal({ file, onCropDone, onCancel, aspect = 3 / 4 }) {
   const [crop, setCrop] = useState()
   const [completedCrop, setCompletedCrop] = useState()
   const imgRef = useRef(null)
@@ -11,10 +11,10 @@ export default function ImageCropModal({ file, onCropDone, onCancel }) {
 
   const onImageLoad = useCallback((e) => {
     const { naturalWidth: width, naturalHeight: height } = e.currentTarget
-    const c = centerCrop(
-      makeAspectCrop({ unit: '%', width: 90 }, 3 / 4, width, height),
-      width, height
-    )
+const c = centerCrop(
+  makeAspectCrop({ unit: '%', width: 90 }, aspect, width, height),
+  width, height
+)
     setCrop(c)
   }, [])
 
@@ -49,13 +49,14 @@ export default function ImageCropModal({ file, onCropDone, onCancel }) {
         <p className={styles.title}>사진 자르기</p>
         <p className={styles.sub}>3:4 비율로 자동 설정돼요. 드래그로 조정할 수 있어요.</p>
         <div className={styles.cropWrap}>
-          <ReactCrop
-            crop={crop}
-            onChange={(_, percentCrop) => setCrop(percentCrop)}
-            onComplete={(c) => setCompletedCrop(c)}
-            aspect={3 / 4}
-            minWidth={50}
-          >
+<ReactCrop
+  crop={crop}
+  onChange={(_, percentCrop) => setCrop(percentCrop)}
+  onComplete={(c) => setCompletedCrop(c)}
+  aspect={aspect}
+  minWidth={50}
+  ruleOfThirds
+>
             <img
               ref={imgRef}
               src={srcUrl}

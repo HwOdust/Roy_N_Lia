@@ -24,6 +24,12 @@ export default function App() {
   const [passwordError, setPasswordError] = useState(false)
   const [timelineSettings, setTimelineSettings] = useState({ start_year: 0, end_year: 1000, zoom: 1 })
   const [paletteTags, setPaletteTags] = useState([])
+  const [homeSettings, setHomeSettings] = useState({
+  hero_title: 'A world of my own making',
+  hero_sub: '이름 없는 세계 속, 이름을 가진 존재들에 대한 기록.',
+  hero_image_url: null,
+  hero_image_opacity: 0.5
+})
 
   useEffect(() => { fetchData() }, [])
 
@@ -33,11 +39,13 @@ async function fetchData() {
   const { data: events } = await supabase.from('timeline_events').select('*').order('x_offset')
   const { data: settings } = await supabase.from('timeline_settings').select('*').limit(1).single()
   const { data: palette } = await supabase.from('palette_tags').select('*').order('order_index')
+  const { data: homeSettings } = await supabase.from('home_settings').select('*').limit(1).single()
   if (chars) setCharacters(chars)
   if (worlds) setWorldCards(worlds)
   if (events) setTimelineEvents(events)
   if (settings) setTimelineSettings(settings)
   if (palette) setPaletteTags(palette)
+  if (homeSettings) setHomeSettings(homeSettings)
 }
 
   function handleEditClick() {
@@ -64,13 +72,16 @@ async function fetchData() {
       <Navbar editMode={editMode} onEditClick={handleEditClick} />
 
       <Routes>
-        <Route path="/" element={
-          <Home
-            characters={characters}
-            worldCards={worldCards}
-            timelineEvents={timelineEvents}
-          />
-        } />
+<Route path="/" element={
+  <Home
+    characters={characters}
+    worldCards={worldCards}
+    timelineEvents={timelineEvents}
+    homeSettings={homeSettings}
+    editMode={editMode}
+    onUpdate={fetchData}
+  />
+} />
         <Route path="/characters" element={
           <Characters
             characters={characters}
