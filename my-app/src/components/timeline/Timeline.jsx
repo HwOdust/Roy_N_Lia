@@ -12,6 +12,7 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
   const offsetRef = useRef(0)
   const containerRef = useRef(null)
   const draggingRef = useRef(null)
+  const [pinAll, setPinAll] = useState(false)
 
   useEffect(() => {
     if (settings) setLocalSettings(settings)
@@ -192,30 +193,14 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
           ))}
         </div>
         <div className={styles.controls}>
-          {editMode && (
-            <>
-              <label className={styles.yearLabel}>
-                시작
-                <input
-                  className={styles.yearInput}
-                  type="number"
-                  value={localSettings.start_year}
-                  onChange={e => setLocalSettings(p => ({ ...p, start_year: Number(e.target.value) }))}
-                  onBlur={() => saveSettings(localSettings)}
-                />
-              </label>
-              <label className={styles.yearLabel}>
-                끝
-                <input
-                  className={styles.yearInput}
-                  type="number"
-                  value={localSettings.end_year}
-                  onChange={e => setLocalSettings(p => ({ ...p, end_year: Number(e.target.value) }))}
-                  onBlur={() => saveSettings(localSettings)}
-                />
-              </label>
-            </>
-          )}
+<button
+  className={`${styles.pinBtn} ${pinAll ? styles.pinActive : ''}`}
+  onClick={() => setPinAll(p => !p)}
+  title="툴팁 고정"
+>
+  <i className={`ti ${pinAll ? 'ti-pin-filled' : 'ti-pin'}`} aria-hidden="true" />
+</button>
+
 
           {editMode && (
             <button className={styles.addBtn} onClick={() => onAdd(-offset + (containerRef.current?.offsetWidth || 800) - PADDING)}>
@@ -258,7 +243,7 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
                   className={styles.eventPin}
                   style={{ left: x, top: `calc(50% + ${y}px)` }}
                 >
-                  {hoveredId === e.id && (
+                 {(pinAll || hoveredId === e.id) && (
                     <div
                       className={isAbove ? `${styles.tooltip} ${styles.tooltipTop}` : `${styles.tooltip} ${styles.tooltipBottom}`}
                       style={{
