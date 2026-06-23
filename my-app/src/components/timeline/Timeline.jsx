@@ -1,37 +1,57 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import styles from './Timeline.module.css'
 
-export default function Timeline({ events, characters, editMode, onEdit, onAdd, onUpdate }) {
+export default function Timeline({ events, characters, editMode, onEdit, onAdd, onUpdate, settings, onSettingsUpdate }) {
   const [hoveredId, setHoveredId] = useState(null)
   const [filterChars, setFilterChars] = useState([])
   const [offset, setOffset] = useState(0)
   const [localPos, setLocalPos] = useState({})
+  const [localSettings, setLocalSettings] = useState({ start_year: 0, end_year: 1000, zoom: 1 })
   const localPosRef = useRef({})
   const offsetRef = useRef(0)
   const containerRef = useRef(null)
   const draggingRef = useRef(null)
 
+  useEffect(() => {
+    if (settings) setLocalSettings(settings)
+  }, [settings])
+
   const allSorted = [...events].sort((a, b) => (a.x_offset ?? 0) - (b.x_offset ?? 0))
 
-const filtered = filterChars.length === 0 || filterChars.length === characters.length
-  ? allSorted
-  : allSorted.filter(e => filterChars.some(id => (e.characters ?? []).includes(id)))
-
-function handleAllToggle() {
-  if (filterChars.length === characters.length) {
-    setFilterChars([])
-  } else {
-    setFilterChars(characters.map(c => c.id))
-  }
-  setOffset(0)
-  offsetRef.current = 0
-}
+  const filtered = filterChars.length === 0 || filterChars.length === characters.length
+    ? allSorted
+    : allSorted.filter(e => filterChars.some(id => (e.characters ?? []).includes(id)))
 
   const maxXOffset = allSorted.length > 0 ? Math.max(...allSorted.map(e => e.x_offset ?? 0)) : 0
   const BAR_WIDTH = Math.max(1200, maxXOffset + 300)
   const PADDING = 100
   const BAR_HEIGHT = 600
+
+  const zoom = localSettings.zoom ?? 1
+  const startYear = localSettings.start_year ?? 0
+  const endYear = localSettings.end_year ?? 1000
+  const yearRange = endYear - startYear || 1
+
+  // 눈금 계산
+  const tickCount = Math.max(2, Math.min(20, Math.round(10 * zoom)))
+  const tickInterval = yearRange / tickCount
+  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => {
+    const year = startYear + i * tickInterval
+    const x = PADDING + ((year - startYear) / yearRange) * (BAR_WIDTH - PADDING * 2)
+    return { year: Math.round(year), x }
+  })
+
+  async function saveSettings(newSettings) {
+    setLocalSettings(newSettings)
+    await supabase.from('timeline_settings').update(newSettings).eq('id', settings.id)
+    onSettingsUpdate()
+  }
+
+  async function handleZoom(delta) {
+    const newZoom = Math.max(0.5, Math.min(5, (localSettings.zoom ?? 1) + delta))
+    await saveSettings({ ...localSettings, zoom: newZoom })
+  }
 
   function getPos(e) {
     const lx = localPos[e.id]?.x ?? e.x_offset ?? 0
@@ -59,6 +79,15 @@ function handleAllToggle() {
     offsetRef.current = 0
   }
 
+  function handleAllToggle() {
+    if (filterChars.length === characters.length) {
+      setFilterChars([])
+    } else {
+      setFilterChars(characters.map(c => c.id))
+    }
+    setOffset(0)
+    offsetRef.current = 0
+  }
 
   const onMouseDown = useCallback((ev, event) => {
     if (!editMode) return
@@ -147,26 +176,53 @@ function handleAllToggle() {
     <div className={styles.wrap}>
       <div className={styles.topRow}>
         <div className={styles.filters}>
-<button
-  className={`${styles.filterBtn} ${filterChars.length === 0 || filterChars.length === characters.length ? styles.active : ''}`}
-  onClick={handleAllToggle}
->전체</button>
-{characters.map(c => (
-  <button
-    key={c.id}
-    className={`${styles.filterBtn} ${filterChars.includes(c.id) ? styles.active : ''}`}
-    onClick={() => toggleFilterChar(c.id)}
-    style={filterChars.includes(c.id) ? { borderColor: c.accent, color: c.accent } : {}}
-  >
-    {c.name}
-  </button>
-))}
+          <button
+            className={`${styles.filterBtn} ${filterChars.length === 0 || filterChars.length === characters.length ? styles.active : ''}`}
+            onClick={handleAllToggle}
+          >전체</button>
+          {characters.map(c => (
+            <button
+              key={c.id}
+              className={`${styles.filterBtn} ${filterChars.includes(c.id) ? styles.active : ''}`}
+              onClick={() => toggleFilterChar(c.id)}
+              style={filterChars.includes(c.id) ? { borderColor: c.accent, color: c.accent } : {}}
+            >
+              {c.name}
+            </button>
+          ))}
         </div>
-        {editMode && (
-          <button className={styles.addBtn} onClick={() => onAdd(-offset + (containerRef.current?.offsetWidth || 800) - PADDING)}>
-            <i className="ti ti-plus" aria-hidden="true" /> 사건 추가
-          </button>
-        )}
+        <div className={styles.controls}>
+          {editMode && (
+            <>
+              <label className={styles.yearLabel}>
+                시작
+                <input
+                  className={styles.yearInput}
+                  type="number"
+                  value={localSettings.start_year}
+                  onChange={e => setLocalSettings(p => ({ ...p, start_year: Number(e.target.value) }))}
+                  onBlur={() => saveSettings(localSettings)}
+                />
+              </label>
+              <label className={styles.yearLabel}>
+                끝
+                <input
+                  className={styles.yearInput}
+                  type="number"
+                  value={localSettings.end_year}
+                  onChange={e => setLocalSettings(p => ({ ...p, end_year: Number(e.target.value) }))}
+                  onBlur={() => saveSettings(localSettings)}
+                />
+              </label>
+            </>
+          )}
+
+          {editMode && (
+            <button className={styles.addBtn} onClick={() => onAdd(-offset + (containerRef.current?.offsetWidth || 800) - PADDING)}>
+              <i className="ti ti-plus" aria-hidden="true" /> 사건 추가
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={styles.timelineRow}>
@@ -185,6 +241,8 @@ function handleAllToggle() {
             }}
           >
             <div className={styles.bar} />
+
+
 
             {filtered.map((e) => {
               const { x, y } = getPos(e)

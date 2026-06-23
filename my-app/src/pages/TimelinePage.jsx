@@ -1,7 +1,7 @@
 import Timeline from '../components/timeline/Timeline'
 import styles from './TimelinePage.module.css'
 
-export default function TimelinePage({ events, characters, editMode, onEdit, onAdd, onUpdate }) {
+export default function TimelinePage({ events, characters, editMode, onEdit, onAdd, onUpdate, settings, onSettingsUpdate }) {
   return (
     <div className={styles.wrap}>
       <Timeline
@@ -11,6 +11,8 @@ export default function TimelinePage({ events, characters, editMode, onEdit, onA
         onEdit={onEdit}
         onAdd={onAdd}
         onUpdate={onUpdate}
+        settings={settings}
+        onSettingsUpdate={onSettingsUpdate}
       />
     </div>
   )

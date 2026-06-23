@@ -21,17 +21,20 @@ export default function App() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState(false)
+  const [timelineSettings, setTimelineSettings] = useState({ start_year: 0, end_year: 1000, zoom: 1 })
 
   useEffect(() => { fetchData() }, [])
 
-  async function fetchData() {
-    const { data: chars } = await supabase.from('characters').select('*').order('order_index')
-    const { data: worlds } = await supabase.from('world_cards').select('*').order('order_index')
-const { data: events } = await supabase.from('timeline_events').select('*').order('x_offset')    
-if (chars) setCharacters(chars)
-    if (worlds) setWorldCards(worlds)
-    if (events) setTimelineEvents(events)
-  }
+async function fetchData() {
+  const { data: chars } = await supabase.from('characters').select('*').order('order_index')
+  const { data: worlds } = await supabase.from('world_cards').select('*').order('order_index')
+  const { data: events } = await supabase.from('timeline_events').select('*').order('x_offset')
+  const { data: settings } = await supabase.from('timeline_settings').select('*').limit(1).single()
+  if (chars) setCharacters(chars)
+  if (worlds) setWorldCards(worlds)
+  if (events) setTimelineEvents(events)
+  if (settings) setTimelineSettings(settings)
+}
 
   function handleEditClick() {
     if (editMode) {
