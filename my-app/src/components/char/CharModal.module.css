@@ -241,6 +241,24 @@
   margin-bottom: 1.25rem;
 }
 
+.tabs {
+  display: flex; gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 0.5px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab {
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; color: var(--text3);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -0.5px;
+  transition: all 0.2s;
+}
+.tab:hover { color: var(--text); }
+.tabActive { color: var(--purple) !important; border-bottom-color: var(--purple) !important; }
+
 .milestoneList {
   display: flex; flex-direction: column; gap: 0;
 }
@@ -272,3 +290,39 @@
 .milestoneDesc {
   font-size: 12px; color: var(--text3); line-height: 1.6;
 }
+
+.playlistList {
+  display: flex; flex-direction: column; gap: 0;
+}
+
+.playlistItem {
+  padding: 0.75rem 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.playlistInfo {
+  display: flex; align-items: baseline; gap: 0.5rem;
+  margin-bottom: 3px;
+}
+
+.playlistTitle {
+  font-size: 13px; color: var(--text);
+}
+
+.playlistArtist {
+  font-size: 11px; color: var(--text3);
+}
+
+.playlistMemo {
+  font-size: 12px; color: var(--text3); line-height: 1.6;
+}
+
+.addItemBtn {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 1rem;
+  background: none; border: 0.5px dashed var(--border2);
+  border-radius: 8px; padding: 8px 14px;
+  color: var(--text3); font-size: 12px; cursor: pointer;
+  width: 100%; transition: all 0.2s;
+}
+.addItemBtn:hover { border-color: var(--purple); color: var(--purple); }

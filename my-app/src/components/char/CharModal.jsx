@@ -9,6 +9,16 @@ const DUMMY_MILESTONES = [
   { id: 3, date: '145년 여름', title: '세 번째 사건', description: '그리고 또.' },
 ]
 
+const DUMMY_PLAYLIST = [
+  { id: 1, title: 'Song Title', artist: 'Artist Name', memo: '이 캐릭터의 테마곡' },
+  { id: 2, title: 'Another Song', artist: 'Artist', memo: '감정선을 잘 표현함' },
+]
+
+const TABS = [
+  { id: 'milestone', label: '마일스톤' },
+  { id: 'playlist', label: '플리' },
+]
+
 export default function CharModal({ char, editMode, paletteTags, onClose, onUpdate }) {
   const isNew = char?._new
   const [form, setForm] = useState({
@@ -19,6 +29,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
   const [showPaletteColor, setShowPaletteColor] = useState(false)
   const [showPaletteAccent, setShowPaletteAccent] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [activeTab, setActiveTab] = useState('milestone')
   const colorBtnRef = useRef(null)
   const accentBtnRef = useRef(null)
 
@@ -255,7 +266,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
           </div>
 
           {/* 확장 버튼 - 항상 하단 고정 */}
-          {!editMode && !char._new && (
+          {!char._new && (
             <div className={styles.expandBtnWrap}>
               <button className={styles.expandBtn} onClick={() => setExpanded(p => !p)}>
                 <i className={`ti ti-chevron-${expanded ? 'left' : 'right'}`} />
@@ -267,18 +278,58 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
         {/* 오른쪽: 패널 */}
         {expanded && (
           <div className={styles.panel}>
-            <p className={styles.panelTitle}>마일스톤</p>
-            <div className={styles.milestoneList}>
-              {DUMMY_MILESTONES.map((m) => (
-                <div key={m.id} className={styles.milestone}>
-                  <span className={styles.milestoneDate}>{m.date}</span>
-                  <div>
-                    <p className={styles.milestoneTitle}>{m.title}</p>
-                    <p className={styles.milestoneDesc}>{m.description}</p>
-                  </div>
-                </div>
+            {/* 탭 */}
+            <div className={styles.tabs}>
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  className={`${styles.tab} ${activeTab === t.id ? styles.tabActive : ''}`}
+                  onClick={() => setActiveTab(t.id)}
+                >
+                  {t.label}
+                </button>
               ))}
             </div>
+
+            {/* 마일스톤 탭 */}
+            {activeTab === 'milestone' && (
+              <div className={styles.milestoneList}>
+                {DUMMY_MILESTONES.map((m) => (
+                  <div key={m.id} className={styles.milestone}>
+                    <span className={styles.milestoneDate}>{m.date}</span>
+                    <div>
+                      <p className={styles.milestoneTitle}>{m.title}</p>
+                      <p className={styles.milestoneDesc}>{m.description}</p>
+                    </div>
+                  </div>
+                ))}
+                {editMode && !char._viewOnly && (
+                  <button className={styles.addItemBtn}>
+                    <i className="ti ti-plus" /> 마일스톤 추가
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* 플리 탭 */}
+            {activeTab === 'playlist' && (
+              <div className={styles.playlistList}>
+                {DUMMY_PLAYLIST.map((p) => (
+                  <div key={p.id} className={styles.playlistItem}>
+                    <div className={styles.playlistInfo}>
+                      <p className={styles.playlistTitle}>{p.title}</p>
+                      <p className={styles.playlistArtist}>{p.artist}</p>
+                    </div>
+                    {p.memo && <p className={styles.playlistMemo}>{p.memo}</p>}
+                  </div>
+                ))}
+                {editMode && !char._viewOnly && (
+                  <button className={styles.addItemBtn}>
+                    <i className="ti ti-plus" /> 곡 추가
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
