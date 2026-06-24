@@ -161,7 +161,7 @@ export default function Playlist({ characters, editMode, onUpdate }) {
         )}
       </div>
       <p className={styles.filterNote}>
-        {filterChars.length > 0 ? '선택한 캐릭터 모두 포함된 곡만 표시' : ''}
+        {filterChars.length > 0 ? '선택한 캐릭터 모두 포함된 곡만 표시' : '\u00A0'}
       </p>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
