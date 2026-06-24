@@ -10,11 +10,6 @@ import { supabase } from '../../supabase'
 import PalettePicker from '../palette/PalettePicker'
 import styles from './CharModal.module.css'
 
-const DUMMY_PLAYLIST = [
-  { id: 1, title: 'Song Title', artist: 'Artist Name', memo: '이 캐릭터의 테마곡' },
-  { id: 2, title: 'Another Song', artist: 'Artist', memo: '감정선을 잘 표현함' },
-]
-
 const TABS = [
   { id: 'milestone', label: '마일스톤' },
   { id: 'playlist', label: '플리' },
@@ -118,7 +113,7 @@ function MilestoneForm({ initial, onSave, onCancel }) {
   )
 }
 
-export default function CharModal({ char, editMode, paletteTags, onClose, onUpdate }) {
+export default function CharModal({ char, editMode, paletteTags, playlist = [], characters = [], onClose, onUpdate }) {
   const isNew = char?._new
   const [form, setForm] = useState({
     name: '', role: '', initial: '',
@@ -524,24 +519,46 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
             )}
 
             {/* 플리 탭 */}
-            {activeTab === 'playlist' && (
-              <div className={styles.playlistList}>
-                {DUMMY_PLAYLIST.map((p) => (
-                  <div key={p.id} className={styles.playlistItem}>
-                    <div className={styles.playlistInfo}>
-                      <p className={styles.playlistTitle}>{p.title}</p>
-                      <p className={styles.playlistArtist}>{p.artist}</p>
-                    </div>
-                    {p.memo && <p className={styles.playlistMemo}>{p.memo}</p>}
-                  </div>
-                ))}
-                {editMode && !char._viewOnly && (
-                  <button className={styles.addItemBtn}>
-                    <i className="ti ti-plus" /> 곡 추가
-                  </button>
-                )}
-              </div>
-            )}
+            {activeTab === 'playlist' && (() => {
+              const charSongs = playlist.filter(s => s.characters?.includes(char.id))
+              return (
+                <div className={styles.playlistGrid}>
+                  {charSongs.length === 0 && <p className={styles.empty}>등록된 플리가 없어요.</p>}
+                  {charSongs.map(s => {
+                    const ytId = s.youtube_url?.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)?.[1]
+                    const songChars = (s.characters || []).map(id => characters.find(c => c.id === id)).filter(Boolean)
+                    return (
+                      <div key={s.id} className={styles.playlistCard}>
+                        {ytId ? (
+                          <div className={styles.playlistThumb}>
+                            <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={s.title} />
+                            <a href={s.youtube_url} target="_blank" rel="noopener noreferrer" className={styles.playlistPlayBtn}>
+                              <i className="ti ti-player-play-filled" />
+                            </a>
+                          </div>
+                        ) : (
+                          <div className={styles.playlistThumbEmpty}><i className="ti ti-music" /></div>
+                        )}
+                        <div className={styles.playlistCardInfo}>
+                          <p className={styles.playlistTitle}>{s.title}</p>
+                          {s.artist && <p className={styles.playlistArtist}>{s.artist}</p>}
+                          {s.memo && <p className={styles.playlistMemo}>{s.memo}</p>}
+                          {songChars.length > 0 && (
+                            <div className={styles.charTags}>
+                              {songChars.map(c => (
+                                <span key={c.id} className={styles.charTag} style={{ borderColor: c.accent, color: c.accent }}>
+                                  {c.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
           </div>
         )}
 

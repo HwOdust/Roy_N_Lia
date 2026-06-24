@@ -1,0 +1,154 @@
+.wrap { max-width: 1100px; margin: 0 auto; padding: 2.5rem; }
+
+.filterRow {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filterBtn {
+  font-size: 12px; padding: 4px 12px;
+  border-radius: 20px; border: 0.5px solid var(--border2);
+  background: none; color: var(--text3); cursor: pointer;
+  transition: all 0.2s;
+}
+.filterBtn:hover { border-color: var(--purple); color: var(--purple); }
+.filterBtnActive { background: none; }
+
+.filterClear {
+  font-size: 12px; padding: 4px 12px;
+  border-radius: 20px; border: 0.5px solid var(--border);
+  background: none; color: var(--text3); cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
+  transition: all 0.2s;
+}
+.filterClear:hover { color: var(--text); }
+
+.filterNote {
+  font-size: 11px; color: var(--text3);
+  margin-bottom: 1.5rem;
+  min-height: 1.2em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.card {
+  background: var(--bg2); border: 0.5px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  position: relative; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border2); }
+
+.dragHandle {
+  position: absolute; top: 8px; left: 8px;
+  color: var(--text3); cursor: grab; font-size: 14px;
+  z-index: 2; opacity: 0; transition: opacity 0.15s;
+  touch-action: none;
+}
+.card:hover .dragHandle { opacity: 1; }
+.dragHandle:active { cursor: grabbing; }
+
+.thumbEmpty {
+  aspect-ratio: 16/9; background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); font-size: 28px;
+}
+
+.thumb {
+  position: relative; aspect-ratio: 16/9;
+  overflow: hidden; background: var(--bg3);
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.playBtn {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.4); color: #fff; font-size: 24px;
+  opacity: 0; transition: opacity 0.2s;
+  text-decoration: none;
+}
+.thumb:hover .playBtn { opacity: 1; }
+
+.info { padding: 0.875rem; }
+
+.songTitle { font-size: 14px; color: var(--text); margin-bottom: 3px; }
+.artist { font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+.memo { font-size: 12px; color: var(--text3); line-height: 1.6; margin-bottom: 8px; white-space: pre-wrap; }
+
+.charTags { display: flex; flex-wrap: wrap; gap: 4px; }
+.charTag {
+  font-size: 11px; padding: 2px 8px;
+  border-radius: 10px; border: 0.5px solid;
+}
+
+.cardActions {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; gap: 4px;
+  opacity: 0; transition: opacity 0.2s;
+}
+.card:hover .cardActions { opacity: 1; }
+
+.actionBtn {
+  background: rgba(0,0,0,0.6); border: none; cursor: pointer;
+  color: #fff; font-size: 13px; padding: 5px 7px;
+  border-radius: 6px; transition: background 0.2s;
+}
+.actionBtn:hover { background: rgba(0,0,0,0.85); }
+
+.addCard {
+  background: none; border: 0.5px dashed var(--border2);
+  border-radius: 14px; color: var(--text3);
+  font-size: 13px; cursor: pointer; min-height: 100px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all 0.2s;
+}
+.addCard:hover { border-color: var(--purple); color: var(--purple); }
+
+.modalBg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+  z-index: 200; display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+}
+.modal {
+  background: #161618; border-radius: 20px; padding: 2rem;
+  width: 520px; max-height: 90vh; overflow-y: auto;
+  position: relative;
+  scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+}
+.close {
+  position: absolute; top: 1.25rem; right: 1.25rem;
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 18px;
+}
+.modalTitle { font-size: 15px; color: var(--text); margin-bottom: 1.5rem; }
+
+.formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+.label { display: flex; flex-direction: column; gap: 6px; font-size: 11px; color: var(--text3); letter-spacing: 0.05em; }
+.input {
+  background: var(--bg3); border: 0.5px solid var(--border2);
+  border-radius: 8px; padding: 8px 12px;
+  color: var(--text); font-size: 13px; font-family: inherit;
+  resize: vertical;
+}
+.input:focus { outline: none; border-color: var(--purple); }
+
+.charLabel { font-size: 11px; color: var(--text3); margin-bottom: 0.75rem; }
+.charGrid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+.charBtn {
+  font-size: 12px; padding: 4px 12px;
+  border-radius: 20px; border: 0.5px solid var(--border2);
+  background: none; color: var(--text3); cursor: pointer; transition: all 0.2s;
+}
+.charBtnActive { background: none; }
+
+.btnRow { display: flex; justify-content: flex-end; }
+.saveBtn {
+  padding: 8px 24px; border-radius: 10px;
+  background: var(--purple-dark); border: none;
+  color: #fff; font-size: 13px; cursor: pointer; transition: opacity 0.2s;
+}
+.saveBtn:hover { opacity: 0.85; }

@@ -14,7 +14,7 @@
   --purple-dark: #534AB7;
 }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
 body {
   background: var(--bg);
   color: var(--text);

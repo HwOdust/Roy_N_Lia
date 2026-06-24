@@ -365,6 +365,52 @@
   font-size: 12px; color: var(--text3); line-height: 1.6;
 }
 
+.playlistLink {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--text3);
+  text-decoration: none; margin-top: 4px;
+  transition: color 0.2s;
+}
+.playlistLink:hover { color: var(--purple); }
+
+.playlistGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.playlistCard {
+  border-radius: 10px; overflow: hidden;
+  border: 0.5px solid var(--border); background: var(--bg3);
+}
+
+.playlistThumb {
+  position: relative; aspect-ratio: 16/9; overflow: hidden;
+}
+.playlistThumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.playlistPlayBtn {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.4); color: #fff; font-size: 20px;
+  opacity: 0; transition: opacity 0.2s; text-decoration: none;
+}
+.playlistThumb:hover .playlistPlayBtn { opacity: 1; }
+
+.playlistThumbEmpty {
+  aspect-ratio: 16/9; background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); font-size: 22px;
+}
+
+.playlistCardInfo { padding: 0.6rem 0.75rem; }
+
+.charTags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.charTag {
+  font-size: 11px; padding: 2px 8px;
+  border-radius: 10px; border: 0.5px solid;
+}
+
 .addItemBtn {
   display: flex; align-items: center; gap: 6px;
   margin-top: 1rem;
