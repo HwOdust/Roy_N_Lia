@@ -17,7 +17,22 @@
   padding: 0.5rem 0.75rem;
   border: 0.5px solid var(--border2);
   border-radius: 10px; background: var(--bg2);
+  position: relative;
 }
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%; transform: translateX(-50%);
+  background: var(--bg3); border: 0.5px solid var(--border2);
+  border-radius: 10px; padding: 0.6rem 0.8rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  z-index: 10; pointer-events: none;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  opacity: 0; transition: opacity 0.15s;
+}
+.tagCard:hover .tooltip { opacity: 1; }
 
 .colorDot {
   width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
@@ -66,18 +81,6 @@
 }
 .addBtn:hover { opacity: 0.85; }
 
-.tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%; transform: translateX(-50%);
-  background: var(--bg3); border: 0.5px solid var(--border2);
-  border-radius: 10px; padding: 0.6rem 0.8rem;
-  display: flex; align-items: center; gap: 0.6rem;
-  z-index: 10; pointer-events: none;
-  white-space: nowrap;
-  cssbox-shadow: 0 0 0 1px var(--border2), 0 0 24px 6px var(--tooltip-glow, rgba(127,119,221,0.35)), 0 4px 24px rgba(0,0,0,0.4);
-backdrop-filter: blur(8px);
-}
 
 .tooltipSwatch {
   width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;

@@ -343,7 +343,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
                     <input className={styles.input} name="role" value={form.role} onChange={handleChange} />
                   </label>
                   <label className={styles.label}>이니셜
-                    <input className={styles.input} name="initial" value={form.initial} onChange={handleChange} maxLength={2} />
+                    <input className={styles.input} name="initial" value={form.initial} onChange={handleChange} maxLength={10} />
                   </label>
                   <label className={styles.label} style={{ gridColumn: '1 / -1' }}>소개
                     <textarea className={styles.input} name="description" value={form.description} onChange={handleChange} rows={3} />
@@ -403,6 +403,12 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
                   </div>
                 </div>
                 <div className={styles.divider} />
+                {char.initial && (
+                  <div className={styles.row}>
+                    <span className={styles.key}>이니셜</span>
+                    <span style={{ fontFamily: 'monospace', color: 'var(--text2)' }}>{char.initial}</span>
+                  </div>
+                )}
                 <div className={styles.row}>
                   <span className={styles.key}>이니셜 색</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
