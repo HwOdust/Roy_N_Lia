@@ -40,6 +40,14 @@
 
 .tagName { font-size: 13px; color: var(--text); }
 
+.nameEditInput {
+  font-size: 13px; color: var(--text);
+  background: none; border: none;
+  border-bottom: 0.5px solid var(--purple);
+  outline: none; width: 80px;
+  padding: 0 2px;
+}
+
 .colorInput {
   width: 28px; height: 28px; border-radius: 6px;
   border: 0.5px solid var(--border2); cursor: pointer;

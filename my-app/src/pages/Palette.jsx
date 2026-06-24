@@ -5,6 +5,8 @@ import styles from './Palette.module.css'
 export default function Palette({ paletteTags, characters, onUpdate, editMode }) {
   const [form, setForm] = useState({ name: '', color: '#7F77DD', type: 'event' })
   const [localColors, setLocalColors] = useState({})
+  const [editingNameId, setEditingNameId] = useState(null)
+  const [editingName, setEditingName] = useState('')
 
   const charTags = [...paletteTags.filter(t => t.type === 'character')]
     .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
@@ -35,6 +37,13 @@ export default function Palette({ paletteTags, characters, onUpdate, editMode })
     if (tag?.character_id) {
       await supabase.from('characters').update({ accent: color }).eq('id', tag.character_id)
     }
+    onUpdate()
+  }
+
+  async function handleNameSave(id) {
+    if (!editingName.trim()) return
+    await supabase.from('palette_tags').update({ name: editingName }).eq('id', id)
+    setEditingNameId(null)
     onUpdate()
   }
 
@@ -79,7 +88,21 @@ export default function Palette({ paletteTags, characters, onUpdate, editMode })
             return (
             <div key={t.id} className={styles.tagCard}>
               <div className={styles.colorDot} style={{ background: color }} />
-              <p className={styles.tagName}>{t.name}</p>
+              {editMode && editingNameId === t.id ? (
+                <input
+                  className={styles.nameEditInput}
+                  value={editingName}
+                  autoFocus
+                  onChange={e => setEditingName(e.target.value)}
+                  onBlur={() => handleNameSave(t.id)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleNameSave(t.id); if (e.key === 'Escape') setEditingNameId(null) }}
+                />
+              ) : (
+                <p
+                  className={styles.tagName}
+                  onDoubleClick={() => { if (editMode) { setEditingNameId(t.id); setEditingName(t.name) } }}
+                >{t.name}</p>
+              )}
               {editMode && (
                 <>
                   <input
