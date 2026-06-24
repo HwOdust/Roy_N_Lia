@@ -342,7 +342,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
                   <label className={styles.label}>역할
                     <input className={styles.input} name="role" value={form.role} onChange={handleChange} />
                   </label>
-                  <label className={styles.label}>이니셜
+                  <label className={styles.label}>별명
                     <input className={styles.input} name="initial" value={form.initial} onChange={handleChange} maxLength={10} />
                   </label>
                   <label className={styles.label} style={{ gridColumn: '1 / -1' }}>소개
@@ -405,7 +405,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
                 <div className={styles.divider} />
                 {char.initial && (
                   <div className={styles.row}>
-                    <span className={styles.key}>이니셜</span>
+                    <span className={styles.key}>별명</span>
                     <span style={{ fontFamily: 'monospace', color: 'var(--text2)' }}>{char.initial}</span>
                   </div>
                 )}

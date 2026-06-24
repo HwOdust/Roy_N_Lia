@@ -4,7 +4,7 @@ import styles from './Navbar.module.css'
 export default function Navbar({ editMode, onEditClick }) {
   return (
     <nav className={styles.nav}>
-      <NavLink to="/" className={styles.logo}>Unnamed World</NavLink>
+      <NavLink to="/" className={styles.logo}>Roy⯎Lia</NavLink>
       <div className={styles.links}>
         <NavLink to="/characters" className={({ isActive }) => isActive ? styles.activeLink : ''}>Characters</NavLink>
         <NavLink to="/world" className={({ isActive }) => isActive ? styles.activeLink : ''}>World</NavLink>
