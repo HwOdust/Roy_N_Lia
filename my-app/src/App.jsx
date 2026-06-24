@@ -18,7 +18,7 @@ export default function App() {
   const [timelineEvents, setTimelineEvents] = useState([])
   const [selectedChar, setSelectedChar] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
-  const [editMode, setEditMode] = useState(false)
+  const [editMode, setEditMode] = useState(() => sessionStorage.getItem('editMode') === 'true')
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState(false)
@@ -51,6 +51,7 @@ async function fetchData() {
   function handleEditClick() {
     if (editMode) {
       setEditMode(false)
+      sessionStorage.setItem('editMode', 'false')
     } else {
       setShowPasswordModal(true)
       setPasswordInput('')
@@ -61,6 +62,7 @@ async function fetchData() {
   function handlePasswordSubmit() {
     if (passwordInput === import.meta.env.VITE_EDIT_PASSWORD) {
       setEditMode(true)
+      sessionStorage.setItem('editMode', 'true')
       setShowPasswordModal(false)
     } else {
       setPasswordError(true)

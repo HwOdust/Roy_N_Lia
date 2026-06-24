@@ -83,7 +83,7 @@ export default function TimelineModal({ event, characters, editMode, paletteTags
 
   if (!event) return null
 
-  const charList = ((viewOnly ? event.characters : form.characters) || [])
+  const charList = (form.characters || [])
     .map(id => characters.find(c => c.id === id))
     .filter(Boolean)
 
@@ -103,9 +103,9 @@ export default function TimelineModal({ event, characters, editMode, paletteTags
 
         {!isNew && (viewOnly || !editMode) ? (
           <>
-            <div className={styles.viewHeader} style={{ borderColor: event.color || 'var(--purple)' }}>
-              <p className={styles.viewDate}>{event.date}</p>
-              <p className={styles.viewTitle}>{event.title}</p>
+            <div className={styles.viewHeader} style={{ borderColor: form.color || 'var(--purple)' }}>
+              <p className={styles.viewDate}>{form.date}</p>
+              <p className={styles.viewTitle}>{form.title}</p>
             </div>
             {charList.length > 0 && (
               <div className={styles.viewChars}>
@@ -116,10 +116,10 @@ export default function TimelineModal({ event, characters, editMode, paletteTags
                 ))}
               </div>
             )}
-            {event.description && (
+            {form.description && (
               <>
                 <div className={styles.divider} />
-                <p className={styles.viewDesc}>{event.description}</p>
+                <p className={styles.viewDesc}>{form.description}</p>
               </>
             )}
           </>
