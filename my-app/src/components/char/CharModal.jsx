@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
+import {
+  DndContext, closestCenter, PointerSensor, useSensor, useSensors
+} from '@dnd-kit/core'
+import {
+  SortableContext, verticalListSortingStrategy, arrayMove, useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../../supabase'
 import PalettePicker from '../palette/PalettePicker'
 import styles from './CharModal.module.css'
-
-const DUMMY_MILESTONES = [
-  { id: 1, date: '124년 3월', title: '첫 번째 사건', description: '어떤 일이 일어났다.' },
-  { id: 2, date: '130년', title: '두 번째 사건', description: '또 다른 일이 일어났다.' },
-  { id: 3, date: '145년 여름', title: '세 번째 사건', description: '그리고 또.' },
-]
 
 const DUMMY_PLAYLIST = [
   { id: 1, title: 'Song Title', artist: 'Artist Name', memo: '이 캐릭터의 테마곡' },
@@ -18,6 +19,104 @@ const TABS = [
   { id: 'milestone', label: '마일스톤' },
   { id: 'playlist', label: '플리' },
 ]
+
+function SortableMilestone({ m, editMode, onEdit, onDelete }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: m.id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+  return (
+    <div ref={setNodeRef} style={style} className={styles.milestone}>
+      {editMode && (
+        <span className={styles.dragHandle} {...attributes} {...listeners}>
+          <i className="ti ti-grip-vertical" />
+        </span>
+      )}
+      <span className={styles.milestoneDate}>{m.date}</span>
+      <div className={styles.milestoneBody}>
+        <p className={styles.milestoneTitle}>{m.title}</p>
+        {m.description && <p className={styles.milestoneDesc}>{m.description}</p>}
+      </div>
+      {editMode && (
+        <div className={styles.milestoneActions}>
+          <button className={styles.milestoneActionBtn} onClick={() => onEdit(m)}>
+            <i className="ti ti-pencil" />
+          </button>
+          <button className={styles.milestoneActionBtn} onClick={() => onDelete(m.id)}>
+            <i className="ti ti-trash" />
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SortableField({ f, i, onUpdate, onRemove }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: f._id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+  return (
+    <div ref={setNodeRef} style={style} className={styles.fieldRow}>
+      <span className={styles.dragHandle} {...attributes} {...listeners}>
+        <i className="ti ti-grip-vertical" />
+      </span>
+      <div className={styles.fieldInputs}>
+        <input
+          className={styles.input}
+          placeholder="항목명 (예: 나이)"
+          value={f.key}
+          onChange={(e) => onUpdate(i, 'key', e.target.value)}
+        />
+        <textarea
+          className={styles.input}
+          placeholder="내용"
+          value={f.value}
+          rows={3}
+          onChange={(e) => onUpdate(i, 'value', e.target.value)}
+        />
+      </div>
+      <button className={styles.removeFieldBtn} onClick={() => onRemove(i)}>
+        <i className="ti ti-x" aria-hidden="true" />
+      </button>
+    </div>
+  )
+}
+
+function MilestoneForm({ initial, onSave, onCancel }) {
+  const [form, setForm] = useState(initial || { date: '', title: '', description: '' })
+  return (
+    <div className={styles.milestoneForm}>
+      <input
+        className={styles.input}
+        placeholder="날짜 (예: 124년 3월)"
+        value={form.date}
+        onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
+      />
+      <input
+        className={styles.input}
+        placeholder="제목"
+        value={form.title}
+        onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+      />
+      <textarea
+        className={styles.input}
+        placeholder="설명 (선택)"
+        value={form.description}
+        rows={2}
+        onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+      />
+      <div className={styles.milestoneFormBtns}>
+        <button className={styles.cancelBtn} onClick={onCancel}>취소</button>
+        <button className={styles.saveBtn} onClick={() => onSave(form)}>저장</button>
+      </div>
+    </div>
+  )
+}
 
 export default function CharModal({ char, editMode, paletteTags, onClose, onUpdate }) {
   const isNew = char?._new
@@ -30,8 +129,13 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
   const [showPaletteAccent, setShowPaletteAccent] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState('milestone')
+  const [milestones, setMilestones] = useState([])
+  const [addingMilestone, setAddingMilestone] = useState(false)
+  const [editingMilestone, setEditingMilestone] = useState(null)
   const colorBtnRef = useRef(null)
   const accentBtnRef = useRef(null)
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   useEffect(() => {
     if (!isNew && char) {
@@ -42,13 +146,89 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
         description: char.description || '',
         color: char.color || '#1e1e30',
         accent: char.accent || '#AFA9EC',
-        fields: char.fields || []
+        fields: (char.fields || []).map((f, i) => ({ ...f, _id: `field-${i}-${Date.now()}` }))
       })
     }
   }, [char])
 
+  useEffect(() => {
+    if (char?.id && !isNew) fetchMilestones()
+  }, [char?.id])
+
+  async function fetchMilestones() {
+    const { data } = await supabase
+      .from('character_milestones')
+      .select('*')
+      .eq('character_id', char.id)
+      .order('order_index')
+    if (data) setMilestones(data)
+  }
+
+  async function handleAddMilestone(formData) {
+    const { data } = await supabase.from('character_milestones').insert([{
+      character_id: char.id,
+      date: formData.date,
+      title: formData.title,
+      description: formData.description,
+      order_index: milestones.length
+    }]).select().single()
+    if (data) setMilestones(p => [...p, data])
+    setAddingMilestone(false)
+  }
+
+  async function handleEditMilestone(formData) {
+    await supabase.from('character_milestones').update({
+      date: formData.date,
+      title: formData.title,
+      description: formData.description
+    }).eq('id', editingMilestone.id)
+    setMilestones(p => p.map(m => m.id === editingMilestone.id ? { ...m, ...formData } : m))
+    setEditingMilestone(null)
+  }
+
+  async function handleDeleteMilestone(id) {
+    await supabase.from('character_milestones').delete().eq('id', id)
+    setMilestones(p => p.filter(m => m.id !== id))
+  }
+
+  async function handleDragEnd(event) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = milestones.findIndex(m => m.id === active.id)
+    const newIndex = milestones.findIndex(m => m.id === over.id)
+    const newOrder = arrayMove(milestones, oldIndex, newIndex)
+    setMilestones(newOrder)
+    await Promise.all(
+      newOrder.map((m, i) =>
+        supabase.from('character_milestones').update({ order_index: i }).eq('id', m.id)
+      )
+    )
+  }
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  function addField() {
+    setForm({ ...form, fields: [...form.fields, { key: '', value: '', _id: `field-new-${Date.now()}` }] })
+  }
+
+  function removeField(i) {
+    const fields = form.fields.filter((_, idx) => idx !== i)
+    setForm({ ...form, fields })
+  }
+
+  function updateField(i, k, v) {
+    const fields = form.fields.map((f, idx) => idx === i ? { ...f, [k]: v } : f)
+    setForm({ ...form, fields })
+  }
+
+  function handleFieldDragEnd(event) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = form.fields.findIndex(f => f._id === active.id)
+    const newIndex = form.fields.findIndex(f => f._id === over.id)
+    setForm({ ...form, fields: arrayMove(form.fields, oldIndex, newIndex) })
   }
 
   function addField() {
@@ -151,7 +331,6 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
             <i className="ti ti-x" aria-hidden="true" />
           </button>
 
-          {/* 스크롤 영역 */}
           <div className={styles.modalScroll}>
             {editMode && !char._viewOnly ? (
               <>
@@ -193,32 +372,19 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
                       <i className="ti ti-plus" aria-hidden="true" /> 항목 추가
                     </button>
                   </div>
-                  {form.fields.map((f, i) => (
-                    <div key={i} className={styles.fieldRow}>
-                      <input
-                        className={styles.input}
-                        placeholder="항목명 (예: 나이)"
-                        value={f.key}
-                        onChange={(e) => updateField(i, 'key', e.target.value)}
-                      />
-                      <textarea
-                        className={styles.input}
-                        placeholder="내용"
-                        value={f.value}
-                        rows={3}
-                        onChange={(e) => updateField(i, 'value', e.target.value)}
-                      />
-                      <button className={styles.removeFieldBtn} onClick={() => removeField(i)}>
-                        <i className="ti ti-x" aria-hidden="true" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.btnRow}>
-                  {!isNew && (
-                    <button className={styles.deleteBtn} onClick={handleDelete}>삭제</button>
-                  )}
-                  <button className={styles.saveBtn} onClick={handleSave}>저장</button>
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleFieldDragEnd}>
+                    <SortableContext items={form.fields.map(f => f._id)} strategy={verticalListSortingStrategy}>
+                      {form.fields.map((f, i) => (
+                        <SortableField
+                          key={f._id}
+                          f={f}
+                          i={i}
+                          onUpdate={updateField}
+                          onRemove={removeField}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
                 </div>
               </>
             ) : (
@@ -265,7 +431,18 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
             )}
           </div>
 
-          {/* 확장 버튼 - 항상 하단 고정 */}
+          {editMode && !char._viewOnly && !isNew && (
+            <div className={styles.btnRow}>
+              <button className={styles.deleteBtn} onClick={handleDelete}>삭제</button>
+              <button className={styles.saveBtn} onClick={handleSave}>저장</button>
+            </div>
+          )}
+          {editMode && !char._viewOnly && isNew && (
+            <div className={styles.btnRow}>
+              <button className={styles.saveBtn} onClick={handleSave}>저장</button>
+            </div>
+          )}
+
           {!char._new && (
             <div className={styles.expandBtnWrap}>
               <button className={styles.expandBtn} onClick={() => setExpanded(p => !p)}>
@@ -278,7 +455,6 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
         {/* 오른쪽: 패널 */}
         {expanded && (
           <div className={styles.panel}>
-            {/* 탭 */}
             <div className={styles.tabs}>
               {TABS.map(t => (
                 <button
@@ -294,17 +470,42 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
             {/* 마일스톤 탭 */}
             {activeTab === 'milestone' && (
               <div className={styles.milestoneList}>
-                {DUMMY_MILESTONES.map((m) => (
-                  <div key={m.id} className={styles.milestone}>
-                    <span className={styles.milestoneDate}>{m.date}</span>
-                    <div>
-                      <p className={styles.milestoneTitle}>{m.title}</p>
-                      <p className={styles.milestoneDesc}>{m.description}</p>
-                    </div>
-                  </div>
-                ))}
-                {editMode && !char._viewOnly && (
-                  <button className={styles.addItemBtn}>
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext items={milestones.map(m => m.id)} strategy={verticalListSortingStrategy}>
+                    {milestones.map(m => (
+                      editingMilestone?.id === m.id ? (
+                        <MilestoneForm
+                          key={m.id}
+                          initial={editingMilestone}
+                          onSave={handleEditMilestone}
+                          onCancel={() => setEditingMilestone(null)}
+                        />
+                      ) : (
+                        <SortableMilestone
+                          key={m.id}
+                          m={m}
+                          editMode={editMode && !char._viewOnly}
+                          onEdit={setEditingMilestone}
+                          onDelete={handleDeleteMilestone}
+                        />
+                      )
+                    ))}
+                  </SortableContext>
+                </DndContext>
+
+                {milestones.length === 0 && !addingMilestone && (
+                  <p className={styles.empty}>마일스톤이 없어요.</p>
+                )}
+
+                {addingMilestone && (
+                  <MilestoneForm
+                    onSave={handleAddMilestone}
+                    onCancel={() => setAddingMilestone(false)}
+                  />
+                )}
+
+                {editMode && !char._viewOnly && !addingMilestone && (
+                  <button className={styles.addItemBtn} onClick={() => setAddingMilestone(true)}>
                     <i className="ti ti-plus" /> 마일스톤 추가
                   </button>
                 )}

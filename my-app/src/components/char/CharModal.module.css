@@ -150,12 +150,20 @@
 
 .fieldRow {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   gap: 0.5rem;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
   border-bottom: 0.5px solid var(--border);
   position: relative;
+}
+
+.fieldInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .removeFieldBtn {
@@ -168,7 +176,9 @@
 
 
 .btnRow {
-  display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+  padding: 0.75rem 2rem 1rem;
+  flex-shrink: 0;
 }
 
 .saveBtn {
@@ -264,22 +274,59 @@
 }
 
 .milestone {
-  display: flex; gap: 1rem;
+  display: flex; gap: 0.75rem; align-items: flex-start;
   padding: 0.75rem 0;
   border-bottom: 0.5px solid var(--border);
   position: relative;
 }
 
-.milestone::before {
-  content: '';
-  position: absolute; left: 68px; top: 0; bottom: 0;
-  width: 0.5px; background: var(--border2);
+.dragHandle {
+  color: var(--text3); cursor: grab; font-size: 14px;
+  padding-top: 2px; flex-shrink: 0;
+  touch-action: none;
 }
+.dragHandle:active { cursor: grabbing; }
+
+.milestoneBody { flex: 1; min-width: 0; }
+
+.milestoneActions {
+  display: flex; gap: 4px; flex-shrink: 0;
+  opacity: 0; transition: opacity 0.15s;
+}
+.milestone:hover .milestoneActions { opacity: 1; }
+
+.milestoneActionBtn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 13px; padding: 2px 4px;
+  transition: color 0.15s;
+}
+.milestoneActionBtn:hover { color: var(--purple); }
+
+.milestoneForm {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 0.75rem 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.milestoneFormBtns {
+  display: flex; justify-content: flex-end; gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.cancelBtn {
+  padding: 6px 14px; border-radius: 8px;
+  background: none; border: 0.5px solid var(--border2);
+  color: var(--text3); font-size: 12px; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.cancelBtn:hover { opacity: 0.75; }
 
 .milestoneDate {
   font-size: 11px; color: var(--text3);
-  min-width: 60px; flex-shrink: 0;
+  width: 90px; min-width: 90px; flex-shrink: 0;
   padding-top: 2px;
+  white-space: pre-wrap;
+  word-break: keep-all;
 }
 
 .milestoneTitle {
@@ -289,6 +336,7 @@
 
 .milestoneDesc {
   font-size: 12px; color: var(--text3); line-height: 1.6;
+  white-space: pre-wrap;
 }
 
 .playlistList {
