@@ -201,9 +201,9 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
               </button>
             )
           })}
-          {filterChars.length > 0 && filterChars.length < characters.length && (
-            <p className={styles.filterNote}>선택한 캐릭터가 포함된 사건 모두 표시</p>
-          )}
+          <p className={styles.filterNote}>
+            {filterChars.length > 0 && filterChars.length < characters.length ? '선택한 캐릭터가 포함된 사건 모두 표시' : '\u00A0'}
+          </p>
         </div>
         <div className={styles.controls}>
 <button
