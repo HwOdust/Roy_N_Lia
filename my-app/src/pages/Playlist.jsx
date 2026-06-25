@@ -76,8 +76,13 @@ export default function Playlist({ characters, editMode, onUpdate }) {
   }
 
   function handleAllToggle() {
-    setShowAll(p => !p)
-    setFilterChars([])
+    if (showAll && filterChars.length === 0) {
+      setShowAll(false)
+      setFilterChars([])
+    } else {
+      setShowAll(true)
+      setFilterChars([])
+    }
   }
 
   function toggleFilter(id) {
@@ -98,7 +103,7 @@ export default function Playlist({ characters, editMode, onUpdate }) {
     ? []
     : filterChars.length === 0
       ? songs
-      : songs.filter(s => filterChars.every(id => s.characters?.includes(id)))
+      : songs.filter(s => filterChars.some(id => s.characters?.includes(id)))
 
   function openAdd() {
     setEditingSong(null)
@@ -158,19 +163,22 @@ export default function Playlist({ characters, editMode, onUpdate }) {
           style={showAll && filterChars.length === 0 ? { borderColor: 'var(--purple)', color: 'var(--purple)' } : {}}
           onClick={handleAllToggle}
         >전체</button>
-        {characters.map(c => (
-          <button
-            key={c.id}
-            className={`${styles.filterBtn} ${filterChars.includes(c.id) ? styles.filterBtnActive : ''}`}
-            style={filterChars.includes(c.id) ? { borderColor: c.accent, color: c.accent } : {}}
-            onClick={() => toggleFilter(c.id)}
-          >
-            {c.name}
-          </button>
-        ))}
+        {characters.map(c => {
+          const isActive = (showAll && filterChars.length === 0) || filterChars.includes(c.id)
+          return (
+            <button
+              key={c.id}
+              className={`${styles.filterBtn} ${isActive ? styles.filterBtnActive : ''}`}
+              style={isActive ? { borderColor: c.accent, color: c.accent } : {}}
+              onClick={() => toggleFilter(c.id)}
+            >
+              {c.name}
+            </button>
+          )
+        })}
       </div>
       <p className={styles.filterNote}>
-        {filterChars.length > 0 ? '선택한 캐릭터 모두 포함된 곡만 표시' : '\u00A0'}
+        {filterChars.length > 0 ? '선택한 캐릭터가 포함된 플레이리스트 모두 표시' : '\u00A0'}
       </p>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -230,7 +238,7 @@ export default function Playlist({ characters, editMode, onUpdate }) {
             <div className={styles.btnRow}>
               <button className={styles.saveBtn} onClick={handleSave}>저장</button>
             </div>
-          </div>    
+          </div>
         </div>
       )}
     </div>

@@ -86,8 +86,13 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
   }
 
   function handleAllToggle() {
-    setShowAll(p => !p)
-    setFilterChars([])
+    if (showAll && filterChars.length === 0) {
+      setShowAll(false)
+      setFilterChars([])
+    } else {
+      setShowAll(true)
+      setFilterChars([])
+    }
     setOffset(0)
     offsetRef.current = 0
   }
@@ -183,16 +188,19 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
             className={`${styles.filterBtn} ${showAll && filterChars.length === 0 ? styles.active : ''}`}
             onClick={handleAllToggle}
           >전체</button>
-          {characters.map(c => (
-            <button
-              key={c.id}
-              className={`${styles.filterBtn} ${filterChars.includes(c.id) ? styles.active : ''}`}
-              onClick={() => toggleFilterChar(c.id)}
-              style={filterChars.includes(c.id) ? { borderColor: c.accent, color: c.accent } : {}}
-            >
-              {c.name}
-            </button>
-          ))}
+          {characters.map(c => {
+            const isActive = (showAll && filterChars.length === 0) || filterChars.includes(c.id)
+            return (
+              <button
+                key={c.id}
+                className={`${styles.filterBtn} ${isActive ? styles.active : ''}`}
+                onClick={() => toggleFilterChar(c.id)}
+                style={isActive ? { borderColor: c.accent, color: c.accent } : {}}
+              >
+                {c.name}
+              </button>
+            )
+          })}
           {filterChars.length > 0 && filterChars.length < characters.length && (
             <p className={styles.filterNote}>선택한 캐릭터가 포함된 사건 모두 표시</p>
           )}
