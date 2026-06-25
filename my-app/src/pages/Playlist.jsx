@@ -61,6 +61,7 @@ function SongCard({ song, characters, editMode, onEdit, onDelete }) {
 export default function Playlist({ characters, editMode, onUpdate }) {
   const [songs, setSongs] = useState([])
   const [filterChars, setFilterChars] = useState([])
+  const [showAll, setShowAll] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingSong, setEditingSong] = useState(null)
   const [form, setForm] = useState({ title: '', artist: '', youtube_url: '', memo: '', characters: [] })
@@ -74,7 +75,13 @@ export default function Playlist({ characters, editMode, onUpdate }) {
     if (data) setSongs(data)
   }
 
+  function handleAllToggle() {
+    setShowAll(p => !p)
+    setFilterChars([])
+  }
+
   function toggleFilter(id) {
+    setShowAll(true)
     setFilterChars(p => p.includes(id) ? p.filter(c => c !== id) : [...p, id])
   }
 
@@ -87,9 +94,11 @@ export default function Playlist({ characters, editMode, onUpdate }) {
     }))
   }
 
-  const filtered = filterChars.length === 0
-    ? songs
-    : songs.filter(s => filterChars.every(id => s.characters?.includes(id)))
+  const filtered = !showAll
+    ? []
+    : filterChars.length === 0
+      ? songs
+      : songs.filter(s => filterChars.every(id => s.characters?.includes(id)))
 
   function openAdd() {
     setEditingSong(null)
@@ -144,6 +153,11 @@ export default function Playlist({ characters, editMode, onUpdate }) {
   return (
     <div className={styles.wrap}>
       <div className={styles.filterRow}>
+        <button
+          className={`${styles.filterBtn} ${showAll && filterChars.length === 0 ? styles.filterBtnActive : ''}`}
+          style={showAll && filterChars.length === 0 ? { borderColor: 'var(--purple)', color: 'var(--purple)' } : {}}
+          onClick={handleAllToggle}
+        >전체</button>
         {characters.map(c => (
           <button
             key={c.id}
@@ -154,11 +168,6 @@ export default function Playlist({ characters, editMode, onUpdate }) {
             {c.name}
           </button>
         ))}
-        {filterChars.length > 0 && (
-          <button className={styles.filterClear} onClick={() => setFilterChars([])}>
-            <i className="ti ti-x" /> 필터 해제
-          </button>
-        )}
       </div>
       <p className={styles.filterNote}>
         {filterChars.length > 0 ? '선택한 캐릭터 모두 포함된 곡만 표시' : '\u00A0'}
@@ -221,7 +230,7 @@ export default function Playlist({ characters, editMode, onUpdate }) {
             <div className={styles.btnRow}>
               <button className={styles.saveBtn} onClick={handleSave}>저장</button>
             </div>
-          </div>
+          </div>    
         </div>
       )}
     </div>

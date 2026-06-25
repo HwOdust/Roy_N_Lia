@@ -20,9 +20,13 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
 
   const allSorted = [...events].sort((a, b) => (a.x_offset ?? 0) - (b.x_offset ?? 0))
 
-  const filtered = filterChars.length === 0 || filterChars.length === characters.length
-    ? allSorted
-    : allSorted.filter(e => filterChars.some(id => (e.characters ?? []).includes(id)))
+  const [showAll, setShowAll] = useState(true)
+
+  const filtered = !showAll
+    ? []
+    : filterChars.length === 0
+      ? allSorted
+      : allSorted.filter(e => filterChars.some(id => (e.characters ?? []).includes(id)))
 
   const maxXOffset = allSorted.length > 0 ? Math.max(...allSorted.map(e => e.x_offset ?? 0)) : 0
   const BAR_WIDTH = Math.max(1200, maxXOffset + 300)
@@ -73,6 +77,7 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
   }
 
   function toggleFilterChar(id) {
+    setShowAll(true)
     setFilterChars(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     )
@@ -81,11 +86,8 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
   }
 
   function handleAllToggle() {
-    if (filterChars.length === characters.length) {
-      setFilterChars([])
-    } else {
-      setFilterChars(characters.map(c => c.id))
-    }
+    setShowAll(p => !p)
+    setFilterChars([])
     setOffset(0)
     offsetRef.current = 0
   }
@@ -178,7 +180,7 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
       <div className={styles.topRow}>
         <div className={styles.filters}>
           <button
-            className={`${styles.filterBtn} ${filterChars.length === 0 || filterChars.length === characters.length ? styles.active : ''}`}
+            className={`${styles.filterBtn} ${showAll && filterChars.length === 0 ? styles.active : ''}`}
             onClick={handleAllToggle}
           >전체</button>
           {characters.map(c => (
