@@ -10,10 +10,6 @@ import { supabase } from '../../supabase'
 import PalettePicker from '../palette/PalettePicker'
 import styles from './CharModal.module.css'
 
-const TABS = [
-  { id: 'milestone', label: '마일스톤' },
-  { id: 'playlist', label: '플리' },
-]
 
 function SortableMilestone({ m, editMode, onEdit, onDelete }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: m.id })
@@ -113,7 +109,7 @@ function MilestoneForm({ initial, onSave, onCancel }) {
   )
 }
 
-export default function CharModal({ char, editMode, paletteTags, playlist = [], characters = [], onClose, onUpdate }) {
+export default function CharModal({ char, editMode, paletteTags, onClose, onUpdate }) {
   const isNew = char?._new
   const [form, setForm] = useState({
     name: '', role: '', initial: '',
@@ -123,7 +119,6 @@ export default function CharModal({ char, editMode, paletteTags, playlist = [], 
   const [showPaletteColor, setShowPaletteColor] = useState(false)
   const [showPaletteAccent, setShowPaletteAccent] = useState(false)
   const [expanded, setExpanded] = useState(false)
-  const [activeTab, setActiveTab] = useState('milestone')
   const [milestones, setMilestones] = useState([])
   const [addingMilestone, setAddingMilestone] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState(null)
@@ -458,107 +453,51 @@ export default function CharModal({ char, editMode, paletteTags, playlist = [], 
           )}
         </div>
 
-        {/* 오른쪽: 패널 */}
+        {/* 오른쪽: 마일스톤 패널 */}
         {expanded && (
           <div className={styles.panel}>
-            <div className={styles.tabs}>
-              {TABS.map(t => (
-                <button
-                  key={t.id}
-                  className={`${styles.tab} ${activeTab === t.id ? styles.tabActive : ''}`}
-                  onClick={() => setActiveTab(t.id)}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {/* 마일스톤 탭 */}
-            {activeTab === 'milestone' && (
-              <div className={styles.milestoneList}>
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={milestones.map(m => m.id)} strategy={verticalListSortingStrategy}>
-                    {milestones.map(m => (
-                      editingMilestone?.id === m.id ? (
-                        <MilestoneForm
-                          key={m.id}
-                          initial={editingMilestone}
-                          onSave={handleEditMilestone}
-                          onCancel={() => setEditingMilestone(null)}
-                        />
-                      ) : (
-                        <SortableMilestone
-                          key={m.id}
-                          m={m}
-                          editMode={editMode && !char._viewOnly}
-                          onEdit={setEditingMilestone}
-                          onDelete={handleDeleteMilestone}
-                        />
-                      )
-                    ))}
-                  </SortableContext>
-                </DndContext>
-
-                {milestones.length === 0 && !addingMilestone && (
-                  <p className={styles.empty}>마일스톤이 없어요.</p>
-                )}
-
-                {addingMilestone && (
-                  <MilestoneForm
-                    onSave={handleAddMilestone}
-                    onCancel={() => setAddingMilestone(false)}
-                  />
-                )}
-
-                {editMode && !char._viewOnly && !addingMilestone && (
-                  <button className={styles.addItemBtn} onClick={() => setAddingMilestone(true)}>
-                    <i className="ti ti-plus" /> 마일스톤 추가
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* 플리 탭 */}
-            {activeTab === 'playlist' && (() => {
-              const charSongs = playlist.filter(s => s.characters?.includes(char.id))
-              return (
-                <div className={styles.playlistGrid}>
-                  {charSongs.length === 0 && <p className={styles.empty}>등록된 플리가 없어요.</p>}
-                  {charSongs.map(s => {
-                    const ytId = s.youtube_url?.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)?.[1]
-                    const songChars = (s.characters || []).map(id => characters.find(c => c.id === id)).filter(Boolean)
-                    return (
-                      <div key={s.id} className={styles.playlistCard}>
-                        {ytId ? (
-                          <div className={styles.playlistThumb}>
-                            <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={s.title} />
-                            <a href={s.youtube_url} target="_blank" rel="noopener noreferrer" className={styles.playlistPlayBtn}>
-                              <i className="ti ti-player-play-filled" />
-                            </a>
-                          </div>
-                        ) : (
-                          <div className={styles.playlistThumbEmpty}><i className="ti ti-music" /></div>
-                        )}
-                        <div className={styles.playlistCardInfo}>
-                          <p className={styles.playlistTitle}>{s.title}</p>
-                          {s.artist && <p className={styles.playlistArtist}>{s.artist}</p>}
-                          {s.memo && <p className={styles.playlistMemo}>{s.memo}</p>}
-                          {songChars.length > 0 && (
-                            <div className={styles.charTags}>
-                              {songChars.map(c => (
-                                <span key={c.id} className={styles.charTag} style={{ borderColor: c.accent, color: c.accent }}>
-                                  {c.name}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+            <p className={styles.panelTitle}>마일스톤</p>
+            <div className={styles.milestoneList}>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={milestones.map(m => m.id)} strategy={verticalListSortingStrategy}>
+                  {milestones.map(m => (
+                    editingMilestone?.id === m.id ? (
+                      <MilestoneForm
+                        key={m.id}
+                        initial={editingMilestone}
+                        onSave={handleEditMilestone}
+                        onCancel={() => setEditingMilestone(null)}
+                      />
+                    ) : (
+                      <SortableMilestone
+                        key={m.id}
+                        m={m}
+                        editMode={editMode && !char._viewOnly}
+                        onEdit={setEditingMilestone}
+                        onDelete={handleDeleteMilestone}
+                      />
                     )
-                  })}
-                </div>
-              )
-            })()}
+                  ))}
+                </SortableContext>
+              </DndContext>
+
+              {milestones.length === 0 && !addingMilestone && (
+                <p className={styles.empty}>마일스톤이 없어요.</p>
+              )}
+
+              {addingMilestone && (
+                <MilestoneForm
+                  onSave={handleAddMilestone}
+                  onCancel={() => setAddingMilestone(false)}
+                />
+              )}
+
+              {editMode && !char._viewOnly && !addingMilestone && (
+                <button className={styles.addItemBtn} onClick={() => setAddingMilestone(true)}>
+                  <i className="ti ti-plus" /> 마일스톤 추가
+                </button>
+              )}
+            </div>
           </div>
         )}
 

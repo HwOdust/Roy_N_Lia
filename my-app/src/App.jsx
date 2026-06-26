@@ -140,8 +140,6 @@ onAdd={(x) => setSelectedEvent({ _new: true, initialX: x })}
     char={selectedChar}
     editMode={editMode}
     paletteTags={paletteTags}
-    playlist={playlist}
-    characters={characters}
     onClose={() => setSelectedChar(null)}
     onUpdate={fetchData}
   />

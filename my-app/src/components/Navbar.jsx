@@ -10,8 +10,10 @@ export default function Navbar({ editMode, onEditClick }) {
         <NavLink to="/world" className={({ isActive }) => isActive ? styles.activeLink : ''}>World</NavLink>
         <NavLink to="/timeline" className={({ isActive }) => isActive ? styles.activeLink : ''}>Timeline</NavLink>
         <NavLink to="/relations" className={({ isActive }) => isActive ? styles.activeLink : ''}>Relations</NavLink>
+        <span className={styles.divider} />
         <NavLink to="/palette" className={({ isActive }) => isActive ? styles.activeLink : ''}>Palette</NavLink>
         <NavLink to="/playlist" className={({ isActive }) => isActive ? styles.activeLink : ''}>Playlist</NavLink>
+        <span className={styles.divider} />
         <button
           className={`${styles.editBtn} ${editMode ? styles.editBtnActive : ''}`}
           onClick={onEditClick}

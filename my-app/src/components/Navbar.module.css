@@ -26,6 +26,11 @@
 .links a:hover { color: var(--text); }
 .activeLink { color: var(--text) !important; }
 
+.divider {
+  width: 0.5px; height: 14px;
+  background: var(--border2);
+}
+
 .editBtn {
   font-size: 12px;
   padding: 4px 14px;
