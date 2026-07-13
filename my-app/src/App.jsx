@@ -174,6 +174,7 @@ onAdd={(x) => setSelectedEvent({ _new: true, initialX: x })}
           </div>
         </div>
       )}
+      hi
     </div>
   )
 }
