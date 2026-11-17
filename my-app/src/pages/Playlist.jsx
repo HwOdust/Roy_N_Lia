@@ -70,10 +70,11 @@ export default function Playlist({ characters, editMode, onUpdate }) {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
-  useEffect(() => { fetchSongs() }, [])
+  useEffect(() => { fetchSongs() }, [worldId])
 
   async function fetchSongs() {
-    const { data } = await supabase.from('playlist').select('*').order('order_index')
+    if (!worldId) return
+    const { data } = await supabase.from('playlist').select('*').eq('world_id', worldId).order('order_index')
     if (data) setSongs(data)
   }
 
@@ -180,7 +181,7 @@ export default function Playlist({ characters, editMode, onUpdate }) {
         })}
       </div>
       <p className={styles.filterNote}>
-        {filterChars.length > 0 ? '선택한 캐릭터가 포함된 플레이리스트 모두 표시' : '\u00A0'}
+        {filterChars.length > 0 ? '선택한 캐릭터가 포함된 플레이리스트 모두 표시' : ' '}
       </p>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -246,3 +247,4 @@ export default function Playlist({ characters, editMode, onUpdate }) {
     </div>
   )
 }
+  

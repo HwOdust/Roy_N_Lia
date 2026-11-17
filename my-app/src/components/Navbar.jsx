@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styles from './Navbar.module.css'
 
-export default function Navbar({ editMode, onEditClick, user, isOwner, onLogin, onLogout, onWorldChange }) {
+export default function Navbar({ editMode, onEditClick, user, isOwner, worldName, onLogin, onLogout, onWorldChange }) {
   const [showLogin, setShowLogin] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,7 +27,7 @@ export default function Navbar({ editMode, onEditClick, user, isOwner, onLogin, 
   return (
     <>
       <nav className={styles.nav}>
-        <NavLink to="/" className={styles.logo}>Unnamed World</NavLink>
+        <NavLink to="/" className={styles.logo}>{worldName || 'Unnamed World'}</NavLink>
         <div className={styles.links}>
           <NavLink to="/characters" className={({ isActive }) => isActive ? styles.activeLink : ''}>Characters</NavLink>
           <NavLink to="/world" className={({ isActive }) => isActive ? styles.activeLink : ''}>World</NavLink>

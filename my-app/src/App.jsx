@@ -19,13 +19,14 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [worlds, setWorlds] = useState([])
   const [worldId, setWorldId] = useState(() => sessionStorage.getItem('worldId') || null)
+  const [worldName, setWorldName] = useState(() => sessionStorage.getItem('worldName') || '')
   const [worldEntered, setWorldEntered] = useState(() => !!sessionStorage.getItem('worldId'))
   const [characters, setCharacters] = useState([])
   const [worldCards, setWorldCards] = useState([])
   const [timelineEvents, setTimelineEvents] = useState([])
   const [selectedChar, setSelectedChar] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
-  const [editMode, setEditMode] = useState(false)
+  const [editMode, setEditMode] = useState(() => sessionStorage.getItem('editMode') === 'true')
   const [timelineSettings, setTimelineSettings] = useState({ start_year: 0, end_year: 1000, zoom: 1 })
   const [paletteTags, setPaletteTags] = useState([])
   const [playlist, setPlaylist] = useState([])
@@ -36,6 +37,14 @@ export default function App() {
     hero_image_opacity: 0.5
   })
 
+  function toggleEditMode() {
+    setEditMode(v => {
+      const next = !v
+      sessionStorage.setItem('editMode', String(next))
+      return next
+    })
+  }
+
   // 로그인 상태 감지
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -43,29 +52,24 @@ export default function App() {
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
-      if (!session) setEditMode(false)
+      if (!session) {
+        setEditMode(false)
+        sessionStorage.removeItem('editMode')
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
 
   // 세계관 목록 로드
   useEffect(() => {
-    supabase.from('worlds').select('id, name, slug, is_private, password')
-      .then(async ({ data: worldsData }) => {
-        if (!worldsData) return
-        const withImages = await Promise.all(worldsData.map(async w => {
-          const { data: hs } = await supabase
-            .from('home_settings').select('hero_image_url')
-            .eq('world_id', w.id).limit(1).single()
-          return { ...w, hero_image_url: hs?.hero_image_url ?? null }
-        }))
-        setWorlds(withImages)
-      })
+    refreshWorlds()
   }, [])
 
   function handleEnterWorld(world) {
     sessionStorage.setItem('worldId', world.id)
+    sessionStorage.setItem('worldName', world.name)
     setWorldId(world.id)
+    setWorldName(world.name)
     setWorldEntered(true)
   }
 
@@ -99,16 +103,10 @@ export default function App() {
   async function handleLogout() {
     await supabase.auth.signOut()
     setEditMode(false)
+    sessionStorage.removeItem('editMode')
   }
 
-  // 로그인한 유저가 이 세계관 주인인지 확인
-  const isOwner = user && worldId
-    ? (() => {
-        // worlds 테이블의 owner_email과 비교는 별도 체크 없이
-        // Supabase Auth 로그인 자체가 주인임을 증명
-        return true
-      })()
-    : false
+  const isOwner = !!(user && worldId)
 
   async function refreshWorlds() {
     const { data: worldsData } = await supabase.from('worlds').select('id, name, slug, is_private, password')
@@ -139,12 +137,21 @@ export default function App() {
     <div>
       <Navbar
         editMode={editMode}
-        onEditClick={() => setEditMode(v => !v)}
+        onEditClick={toggleEditMode}
         user={user}
         isOwner={isOwner}
+        worldName={worldName}
         onLogin={handleLogin}
         onLogout={handleLogout}
-        onWorldChange={() => { sessionStorage.removeItem('worldId'); setWorldEntered(false); setWorldId(null); setEditMode(false) }}
+        onWorldChange={() => {
+          sessionStorage.removeItem('worldId')
+          sessionStorage.removeItem('worldName')
+          sessionStorage.removeItem('editMode')
+          setWorldEntered(false)
+          setWorldId(null)
+          setWorldName('')
+          setEditMode(false)
+        }}
       />
 
       <Routes>
@@ -202,7 +209,7 @@ export default function App() {
       </Routes>
 
       <footer className={styles.footer}>
-        made with <span style={{ color: 'var(--purple)' }}>♡</span> — Unnamed World
+        made with <span style={{ color: 'var(--purple)' }}>♡</span> — {worldName || 'Unnamed World'}
       </footer>
 
       {selectedChar && (

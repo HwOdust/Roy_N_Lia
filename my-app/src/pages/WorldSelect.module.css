@@ -7,6 +7,7 @@
 
 .topRight {
   position: absolute; top: 1.5rem; right: 2rem;
+  display: flex; gap: 0.5rem; align-items: center;
 }
 
 .authBtn {
@@ -16,6 +17,18 @@
   transition: all 0.2s; letter-spacing: 0.04em;
 }
 .authBtn:hover { color: var(--text); }
+
+.editModeBtn {
+  font-size: 12px; padding: 4px 14px;
+  border-radius: 20px; border: 0.5px solid var(--border2);
+  background: none; color: var(--text3); cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.04em;
+}
+.editModeBtn:hover { color: var(--text); }
+.editModeBtnActive {
+  border-color: var(--purple);
+  color: var(--purple);
+}
 
 .inner {
   display: flex; flex-direction: column; align-items: center; gap: 2.5rem;
@@ -38,6 +51,12 @@
   transition: border-color 0.2s, transform 0.2s;
 }
 .card:hover { border-color: var(--purple); transform: translateY(-3px); }
+.card:hover .cardActions { opacity: 1; }
+
+.cardEditMode {
+  cursor: default;
+}
+.cardEditMode:hover { border-color: var(--border); transform: none; }
 
 .cardImg {
   position: absolute; inset: 0;
@@ -57,6 +76,34 @@
   font-size: 18px; color: #fff;
   text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
+
+/* 카드 액션 버튼 (편집/삭제) */
+.cardActions {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; gap: 4px;
+  opacity: 1;
+  z-index: 10;
+}
+
+.cardActionBtn {
+  width: 28px; height: 28px;
+  border-radius: 8px; border: none;
+  background: rgba(0,0,0,0.6); color: #fff;
+  font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.cardActionBtn:hover { background: var(--purple); }
+
+.cardActionBtnDanger {
+  width: 28px; height: 28px;
+  border-radius: 8px; border: none;
+  background: rgba(0,0,0,0.6); color: #fff;
+  font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.cardActionBtnDanger:hover { background: #e57373; }
 
 .addCard {
   width: 180px; height: 240px;
@@ -108,3 +155,29 @@
   cursor: pointer; transition: opacity 0.2s;
 }
 .btn:hover { opacity: 0.85; }
+
+/* 삭제 모달 전용 */
+.deleteDesc {
+  font-size: 13px; color: var(--text3);
+  line-height: 1.6;
+}
+
+.deleteBtns {
+  display: flex; gap: 0.5rem; margin-top: 0.25rem;
+}
+
+.btnOutline {
+  flex: 1; padding: 8px;
+  border-radius: 10px; background: none;
+  border: 0.5px solid var(--border2); color: var(--text3);
+  font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.btnOutline:hover { border-color: var(--text3); color: var(--text); }
+
+.btnDanger {
+  flex: 1; padding: 8px;
+  border-radius: 10px; background: #c62828;
+  border: none; color: #fff; font-size: 13px;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.btnDanger:hover { opacity: 0.85; }

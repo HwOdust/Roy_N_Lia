@@ -14,8 +14,27 @@ export default function WorldSelect({ worlds, onEnter, isOwner, onLogin, onLogou
   const [loginPw, setLoginPw] = useState('')
   const [loginError, setLoginError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [editMode, setEditMode] = useState(() => sessionStorage.getItem('wsEditMode') === 'true')
+
+  // 편집 모달
+  const [editTarget, setEditTarget] = useState(null)
+  const [editForm, setEditForm] = useState({ name: '', is_private: false, password: '' })
+  const [editLoading, setEditLoading] = useState(false)
+
+  // 삭제 확인
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
+  function toggleEditMode() {
+    setEditMode(v => {
+      const next = !v
+      sessionStorage.setItem('wsEditMode', String(next))
+      return next
+    })
+  }
 
   function handleCardClick(world) {
+    if (editMode) return
     if (world.is_private) {
       setSelected(world)
       setPassword('')
@@ -67,9 +86,54 @@ export default function WorldSelect({ worlds, onEnter, isOwner, onLogin, onLogou
     onWorldsUpdate()
   }
 
+  function openEdit(e, world) {
+    e.stopPropagation()
+    setEditTarget(world)
+    setEditForm({
+      name: world.name,
+      is_private: world.is_private ?? false,
+      password: world.password ?? ''
+    })
+  }
+
+  async function handleEditSubmit(ev) {
+    ev.preventDefault()
+    if (!editForm.name.trim()) return
+    setEditLoading(true)
+    await supabase.from('worlds').update({
+      name: editForm.name.trim(),
+      is_private: editForm.is_private,
+      password: editForm.is_private ? editForm.password : null
+    }).eq('id', editTarget.id)
+    setEditLoading(false)
+    setEditTarget(null)
+    onWorldsUpdate()
+  }
+
+  function openDelete(e, world) {
+    e.stopPropagation()
+    setDeleteTarget(world)
+  }
+
+  async function handleDeleteConfirm() {
+    setDeleteLoading(true)
+    await supabase.from('worlds').delete().eq('id', deleteTarget.id)
+    setDeleteLoading(false)
+    setDeleteTarget(null)
+    onWorldsUpdate()
+  }
+
   return (
     <div className={styles.wrap}>
       <div className={styles.topRight}>
+        {isOwner && (
+          <button
+            className={`${styles.editModeBtn} ${editMode ? styles.editModeBtnActive : ''}`}
+            onClick={toggleEditMode}
+          >
+            {editMode ? '편집모드' : '뷰모드'}
+          </button>
+        )}
         {user ? (
           <button className={styles.authBtn} onClick={onLogout}>로그아웃</button>
         ) : (
@@ -81,7 +145,11 @@ export default function WorldSelect({ worlds, onEnter, isOwner, onLogin, onLogou
         <p className={styles.eyebrow}>Choose your world</p>
         <div className={styles.grid}>
           {worlds.map(w => (
-            <button key={w.id} className={styles.card} onClick={() => handleCardClick(w)}>
+            <button
+              key={w.id}
+              className={`${styles.card} ${editMode ? styles.cardEditMode : ''}`}
+              onClick={() => handleCardClick(w)}
+            >
               {w.hero_image_url && (
                 <img src={w.hero_image_url} className={styles.cardImg} alt="" />
               )}
@@ -89,6 +157,24 @@ export default function WorldSelect({ worlds, onEnter, isOwner, onLogin, onLogou
                 <p className={styles.cardName}>{w.name}</p>
                 {w.is_private && <i className="ti ti-lock" style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }} />}
               </div>
+              {editMode && (
+                <div className={styles.cardActions}>
+                  <button
+                    className={styles.cardActionBtn}
+                    onClick={e => openEdit(e, w)}
+                    title="편집"
+                  >
+                    <i className="ti ti-pencil" />
+                  </button>
+                  <button
+                    className={styles.cardActionBtnDanger}
+                    onClick={e => openDelete(e, w)}
+                    title="삭제"
+                  >
+                    <i className="ti ti-trash" />
+                  </button>
+                </div>
+              )}
             </button>
           ))}
           {isOwner && (
@@ -179,6 +265,59 @@ export default function WorldSelect({ worlds, onEnter, isOwner, onLogin, onLogou
               {addLoading ? '...' : '추가'}
             </button>
           </form>
+        </div>
+      )}
+
+      {/* 세계관 편집 모달 */}
+      {editTarget && (
+        <div className={styles.modalBg} onClick={e => e.target === e.currentTarget && setEditTarget(null)}>
+          <form className={styles.modal} onSubmit={handleEditSubmit}>
+            <p className={styles.modalTitle}>세계관 편집</p>
+            <input
+              className={styles.input}
+              placeholder="세계관 이름"
+              value={editForm.name}
+              onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))}
+              autoFocus
+            />
+            <label className={styles.checkRow}>
+              <input
+                type="checkbox"
+                checked={editForm.is_private}
+                onChange={e => setEditForm(p => ({ ...p, is_private: e.target.checked }))}
+              />
+              <span>비공개 (비밀번호 필요)</span>
+            </label>
+            {editForm.is_private && (
+              <input
+                className={styles.input}
+                type="text"
+                inputMode="numeric"
+                placeholder="비밀번호"
+                value={editForm.password}
+                onChange={e => setEditForm(p => ({ ...p, password: e.target.value }))}
+              />
+            )}
+            <button className={styles.btn} type="submit" disabled={editLoading}>
+              {editLoading ? '...' : '저장'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {deleteTarget && (
+        <div className={styles.modalBg} onClick={e => e.target === e.currentTarget && setDeleteTarget(null)}>
+          <div className={styles.modal}>
+            <p className={styles.modalTitle}>정말 삭제할까요?</p>
+            <p className={styles.deleteDesc}>「{deleteTarget.name}」을 삭제하면 되돌릴 수 없어요.</p>
+            <div className={styles.deleteBtns}>
+              <button className={styles.btnOutline} onClick={() => setDeleteTarget(null)}>취소</button>
+              <button className={styles.btnDanger} onClick={handleDeleteConfirm} disabled={deleteLoading}>
+                {deleteLoading ? '...' : '삭제'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

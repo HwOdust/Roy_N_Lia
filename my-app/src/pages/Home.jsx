@@ -28,6 +28,7 @@ const textShadow = `0 2px 16px ${shadowColor}, 0 0 40px ${shadowColor}aa`
     const url = `${data.publicUrl}?t=${Date.now()}`
     setLocalSettings(p => ({ ...p, hero_image_url: url }))
     await supabase.from('home_settings').update({ hero_image_url: url }).eq('id', homeSettings.id)
+    if (onUpdate) onUpdate()
   }
 
   async function handleOpacityChange(val) {
@@ -67,7 +68,7 @@ const textShadow = `0 2px 16px ${shadowColor}, 0 0 40px ${shadowColor}aa`
               ref={fileInputRef}
               type="file" accept="image/*"
               style={{ display: 'none' }}
-              onChange={e => { if (e.target.files[0]) setCropFile(e.target.files[0]); e.target.value = '' }}
+              onChange={e => { if (e.target.files[0]) { setCropFile(e.target.files[0]); e.target.value = '' } }}
             />
             <div className={styles.opacityRow}>
               <span className={styles.opacityLabel}>글씨 그림자</span>
