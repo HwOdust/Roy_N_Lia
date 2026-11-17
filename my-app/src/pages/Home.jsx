@@ -1,10 +1,12 @@
 import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
+import { useWorldId } from '../WorldContext'
 import ImageCropModal from '../components/ImageCropModal'
 import styles from './Home.module.css'
 
 export default function Home({ characters, worldCards, timelineEvents, homeSettings, editMode, onUpdate }) {
+  const worldId = useWorldId()
   const navigate = useNavigate()
   const [cropFile, setCropFile] = useState(null)
   const [localSettings, setLocalSettings] = useState(null)
@@ -20,7 +22,7 @@ const textShadow = `0 2px 16px ${shadowColor}, 0 0 40px ${shadowColor}aa`
 
   async function handleImageUpload(file) {
     const ext = file.name.split('.').pop()
-    const path = `hero.${ext}`
+    const path = `hero-${worldId ?? 'default'}.${ext}`
     await supabase.storage.from('characters').upload(path, file, { upsert: true })
     const { data } = supabase.storage.from('characters').getPublicUrl(path)
     const url = `${data.publicUrl}?t=${Date.now()}`
