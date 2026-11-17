@@ -11,10 +11,14 @@ export default function ImageCropModal({ file, onCropDone, onCancel, aspect = 3 
 
   const onImageLoad = useCallback((e) => {
     const { naturalWidth: width, naturalHeight: height } = e.currentTarget
-const c = centerCrop(
-  makeAspectCrop({ unit: '%', width: 90 }, aspect, width, height),
-  width, height
-)
+    // 가로 사진이면 height 기준, 세로 사진이면 width 기준으로 초기화
+    const isLandscape = width > height
+    const c = centerCrop(
+      isLandscape
+        ? makeAspectCrop({ unit: '%', height: 90 }, aspect, width, height)
+        : makeAspectCrop({ unit: '%', width: 90 }, aspect, width, height),
+      width, height
+    )
     setCrop(c)
   }, [])
 
@@ -49,14 +53,14 @@ const c = centerCrop(
         <p className={styles.title}>사진 자르기</p>
         <p className={styles.sub}>3:4 비율로 자동 설정돼요. 드래그로 조정할 수 있어요.</p>
         <div className={styles.cropWrap}>
-<ReactCrop
-  crop={crop}
-  onChange={(_, percentCrop) => setCrop(percentCrop)}
-  onComplete={(c) => setCompletedCrop(c)}
-  aspect={aspect}
-  minWidth={50}
-  ruleOfThirds
->
+          <ReactCrop
+            crop={crop}
+            onChange={(_, percentCrop) => setCrop(percentCrop)}
+            onComplete={(c) => setCompletedCrop(c)}
+            aspect={aspect}
+            minWidth={50}
+            ruleOfThirds
+          >
             <img
               ref={imgRef}
               src={srcUrl}
