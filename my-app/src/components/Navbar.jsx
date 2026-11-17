@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styles from './Navbar.module.css'
 
-export default function Navbar({ editMode, onEditClick, user, isOwner, onLogin, onLogout }) {
+export default function Navbar({ editMode, onEditClick, user, isOwner, onLogin, onLogout, onWorldChange }) {
   const [showLogin, setShowLogin] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -45,6 +45,9 @@ export default function Navbar({ editMode, onEditClick, user, isOwner, onLogin, 
               {editMode ? '편집모드' : '뷰모드'}
             </button>
           )}
+          <button className={styles.authBtn} onClick={onWorldChange}>
+            <i className="ti ti-world" />
+          </button>
           {user ? (
             <button className={styles.authBtn} onClick={onLogout}>로그아웃</button>
           ) : (

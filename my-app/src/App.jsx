@@ -13,10 +13,13 @@ import { WorldContext } from './WorldContext'
 import styles from './App.module.css'
 import Palette from './pages/Palette'
 import Playlist from './pages/Playlist'
+import WorldSelect from './pages/WorldSelect'
 
 export default function App() {
   const [user, setUser] = useState(null)
+  const [worlds, setWorlds] = useState([])
   const [worldId, setWorldId] = useState(null)
+  const [worldEntered, setWorldEntered] = useState(false)
   const [characters, setCharacters] = useState([])
   const [worldCards, setWorldCards] = useState([])
   const [timelineEvents, setTimelineEvents] = useState([])
@@ -45,14 +48,16 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // 세계관 로드
+  // 세계관 목록 로드
   useEffect(() => {
-    const slug = getWorldSlug()
-    supabase.from('worlds').select('id').eq('slug', slug).single()
-      .then(({ data }) => {
-        if (data) setWorldId(data.id)
-      })
+    supabase.from('worlds').select('id, name, slug, is_private, password')
+      .then(({ data }) => { if (data) setWorlds(data) })
   }, [])
+
+  function handleEnterWorld(world) {
+    setWorldId(world.id)
+    setWorldEntered(true)
+  }
 
   useEffect(() => {
     if (worldId) fetchData()
@@ -95,6 +100,10 @@ export default function App() {
       })()
     : false
 
+  if (!worldEntered) {
+    return <WorldSelect worlds={worlds} onEnter={handleEnterWorld} />
+  }
+
   return (
     <WorldContext.Provider value={worldId}>
     <div>
@@ -105,6 +114,7 @@ export default function App() {
         isOwner={isOwner}
         onLogin={handleLogin}
         onLogout={handleLogout}
+        onWorldChange={() => { setWorldEntered(false); setWorldId(null); setEditMode(false) }}
       />
 
       <Routes>
