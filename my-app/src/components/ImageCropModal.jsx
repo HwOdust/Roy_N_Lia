@@ -11,16 +11,12 @@ export default function ImageCropModal({ file, onCropDone, onCancel, aspect = 3 
 
   const onImageLoad = useCallback((e) => {
     const { naturalWidth: width, naturalHeight: height } = e.currentTarget
-    // 가로 사진이면 height 기준, 세로 사진이면 width 기준으로 초기화
-    const isLandscape = width > height
     const c = centerCrop(
-      isLandscape
-        ? makeAspectCrop({ unit: '%', height: 90 }, aspect, width, height)
-        : makeAspectCrop({ unit: '%', width: 90 }, aspect, width, height),
+      makeAspectCrop({ unit: '%', width: 90 }, aspect, width, height),
       width, height
     )
     setCrop(c)
-  }, [])
+  }, [aspect])
 
   async function handleDone() {
     if (!completedCrop || !imgRef.current) return
@@ -78,3 +74,4 @@ export default function ImageCropModal({ file, onCropDone, onCancel, aspect = 3 
     </div>
   )
 }
+  

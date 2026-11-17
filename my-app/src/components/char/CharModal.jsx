@@ -124,6 +124,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
   const [milestones, setMilestones] = useState([])
   const [addingMilestone, setAddingMilestone] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const colorBtnRef = useRef(null)
   const accentBtnRef = useRef(null)
 
@@ -223,20 +224,6 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
     setForm({ ...form, fields: arrayMove(form.fields, oldIndex, newIndex) })
   }
 
-  function addField() {
-    setForm({ ...form, fields: [...form.fields, { key: '', value: '' }] })
-  }
-
-  function removeField(i) {
-    const fields = form.fields.filter((_, idx) => idx !== i)
-    setForm({ ...form, fields })
-  }
-
-  function updateField(i, k, v) {
-    const fields = form.fields.map((f, idx) => idx === i ? { ...f, [k]: v } : f)
-    setForm({ ...form, fields })
-  }
-
   async function handleSave() {
     const payload = {
       name: form.name, role: form.role, initial: form.initial,
@@ -279,13 +266,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
     onClose()
   }
 
-  async function handleDelete() {
-    const pw = prompt(`${char.name}을(를) 삭제하려면 비밀번호를 입력하세요.`)
-    if (pw === null) return
-    if (pw !== import.meta.env.VITE_EDIT_PASSWORD) {
-      alert('비밀번호가 틀렸어요.')
-      return
-    }
+  async function handleDeleteConfirm() {
     await supabase.from('characters').delete().eq('id', char.id)
     onUpdate()
     onClose()
@@ -438,7 +419,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
 
           {editMode && !char._viewOnly && !isNew && (
             <div className={styles.btnRow}>
-              <button className={styles.deleteBtn} onClick={handleDelete}>삭제</button>
+              <button className={styles.deleteBtn} onClick={() => setShowDeleteConfirm(true)}>삭제</button>
               <button className={styles.saveBtn} onClick={handleSave}>저장</button>
             </div>
           )}
@@ -530,6 +511,20 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
               setShowPaletteAccent(false)
             }}
           />
+        </div>
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteConfirm && (
+        <div className={styles.bg} style={{ background: 'rgba(0,0,0,0.6)', zIndex: 10 }} onClick={e => e.target === e.currentTarget && setShowDeleteConfirm(false)}>
+          <div className={styles.deleteModal}>
+            <p className={styles.deleteModalTitle}>정말 삭제할까요?</p>
+            <p className={styles.deleteModalDesc}>「{char.name}」을 삭제하면 되돌릴 수 없어요.</p>
+            <div className={styles.deleteModalBtns}>
+              <button className={styles.btnOutline} onClick={() => setShowDeleteConfirm(false)}>취소</button>
+              <button className={styles.btnDanger} onClick={handleDeleteConfirm}>삭제</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
