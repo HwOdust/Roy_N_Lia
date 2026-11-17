@@ -51,7 +51,16 @@ export default function App() {
   // 세계관 목록 로드
   useEffect(() => {
     supabase.from('worlds').select('id, name, slug, is_private, password')
-      .then(({ data }) => { if (data) setWorlds(data) })
+      .then(async ({ data: worldsData }) => {
+        if (!worldsData) return
+        const withImages = await Promise.all(worldsData.map(async w => {
+          const { data: hs } = await supabase
+            .from('home_settings').select('hero_image_url')
+            .eq('world_id', w.id).limit(1).single()
+          return { ...w, hero_image_url: hs?.hero_image_url ?? null }
+        }))
+        setWorlds(withImages)
+      })
   }, [])
 
   function handleEnterWorld(world) {
@@ -101,7 +110,17 @@ export default function App() {
     : false
 
   if (!worldEntered) {
-    return <WorldSelect worlds={worlds} onEnter={handleEnterWorld} />
+    return <WorldSelect worlds={worlds} onEnter={handleEnterWorld} isOwner={!!user} user={user} onLogin={handleLogin} onLogout={handleLogout} onWorldsUpdate={() => {
+      supabase.from('worlds').select('id, name, slug, is_private, password')
+        .then(async ({ data: worldsData }) => {
+          if (!worldsData) return
+          const withImages = await Promise.all(worldsData.map(async w => {
+            const { data: hs } = await supabase.from('home_settings').select('hero_image_url').eq('world_id', w.id).limit(1).single()
+            return { ...w, hero_image_url: hs?.hero_image_url ?? null }
+          }))
+          setWorlds(withImages)
+        })
+    }} />
   }
 
   return (
