@@ -18,8 +18,8 @@ import WorldSelect from './pages/WorldSelect'
 export default function App() {
   const [user, setUser] = useState(null)
   const [worlds, setWorlds] = useState([])
-  const [worldId, setWorldId] = useState(null)
-  const [worldEntered, setWorldEntered] = useState(false)
+  const [worldId, setWorldId] = useState(() => sessionStorage.getItem('worldId') || null)
+  const [worldEntered, setWorldEntered] = useState(() => !!sessionStorage.getItem('worldId'))
   const [characters, setCharacters] = useState([])
   const [worldCards, setWorldCards] = useState([])
   const [timelineEvents, setTimelineEvents] = useState([])
@@ -55,6 +55,7 @@ export default function App() {
   }, [])
 
   function handleEnterWorld(world) {
+    sessionStorage.setItem('worldId', world.id)
     setWorldId(world.id)
     setWorldEntered(true)
   }
@@ -100,8 +101,28 @@ export default function App() {
       })()
     : false
 
+  async function refreshWorlds() {
+    const { data: worldsData } = await supabase.from('worlds').select('id, name, slug, is_private, password')
+    if (!worldsData) return
+    const withImages = await Promise.all(worldsData.map(async w => {
+      const { data: hs } = await supabase.from('home_settings').select('hero_image_url').eq('world_id', w.id).limit(1).single()
+      return { ...w, hero_image_url: hs?.hero_image_url ?? null }
+    }))
+    setWorlds(withImages)
+  }
+
   if (!worldEntered) {
-    return <WorldSelect worlds={worlds} onEnter={handleEnterWorld} />
+    return (
+      <WorldSelect
+        worlds={worlds}
+        onEnter={handleEnterWorld}
+        isOwner={!!user}
+        user={user}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+        onWorldsUpdate={refreshWorlds}
+      />
+    )
   }
 
   return (
@@ -114,7 +135,7 @@ export default function App() {
         isOwner={isOwner}
         onLogin={handleLogin}
         onLogout={handleLogout}
-        onWorldChange={() => { setWorldEntered(false); setWorldId(null); setEditMode(false) }}
+        onWorldChange={() => { sessionStorage.removeItem('worldId'); setWorldEntered(false); setWorldId(null); setEditMode(false) }}
       />
 
       <Routes>
