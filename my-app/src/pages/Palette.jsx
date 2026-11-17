@@ -1,8 +1,10 @@
 import { supabase } from '../supabase'
+import { useWorldId } from '../WorldContext'
 import { useState } from 'react'
 import styles from './Palette.module.css'
 
 export default function Palette({ paletteTags, characters, onUpdate, editMode }) {
+  const worldId = useWorldId()
   const [form, setForm] = useState({ name: '', color: '#7F77DD', type: 'event' })
   const [localColors, setLocalColors] = useState({})
   const [editingNameId, setEditingNameId] = useState(null)
@@ -15,7 +17,7 @@ export default function Palette({ paletteTags, characters, onUpdate, editMode })
 
   async function handleAdd() {
     if (!form.name.trim()) return
-    await supabase.from('palette_tags').insert([{ ...form }])
+    await supabase.from('palette_tags').insert([{ ...form, world_id: worldId }])
     setForm({ name: '', color: '#7F77DD', type: 'event' })
     onUpdate()
   }

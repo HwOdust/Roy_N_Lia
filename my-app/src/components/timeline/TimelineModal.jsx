@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../supabase'
+import { useWorldId } from '../../WorldContext'
 import PalettePicker from '../palette/PalettePicker'
 import styles from './TimelineModal.module.css'
 
 export default function TimelineModal({ event, characters, editMode, paletteTags, onClose, onUpdate }) {
+  const worldId = useWorldId()
   const isNew = event?._new
   const [viewOnly, setViewOnly] = useState(false)
   const [showPalette, setShowPalette] = useState(false)
@@ -49,7 +51,7 @@ export default function TimelineModal({ event, characters, editMode, paletteTags
       color: form.color
     }
     if (isNew) {
-      await supabase.from('timeline_events').insert([payload])
+      await supabase.from('timeline_events').insert([{ ...payload, world_id: worldId }])
     } else {
       await supabase.from('timeline_events').update(payload).eq('id', event.id)
     }

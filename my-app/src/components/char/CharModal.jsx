@@ -7,6 +7,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../../supabase'
+import { useWorldId } from '../../WorldContext'
 import PalettePicker from '../palette/PalettePicker'
 import styles from './CharModal.module.css'
 
@@ -110,6 +111,7 @@ function MilestoneForm({ initial, onSave, onCancel }) {
 }
 
 export default function CharModal({ char, editMode, paletteTags, onClose, onUpdate }) {
+  const worldId = useWorldId()
   const isNew = char?._new
   const [form, setForm] = useState({
     name: '', role: '', initial: '',
@@ -242,14 +244,15 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
       fields: form.fields.filter(f => f.key || f.value)
     }
     if (isNew) {
-      const { data: newChar } = await supabase.from('characters').insert([payload]).select().single()
+      const { data: newChar } = await supabase.from('characters').insert([{ ...payload, world_id: worldId }]).select().single()
       if (newChar) {
         await supabase.from('palette_tags').insert([{
           name: newChar.name,
           color: newChar.accent,
           type: 'character',
           character_id: newChar.id,
-          order_index: newChar.order_index ?? 0
+          order_index: newChar.order_index ?? 0,
+          world_id: worldId
         }])
       }
     } else {
@@ -267,7 +270,8 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
           color: form.accent,
           type: 'character',
           character_id: char.id,
-          order_index: char.order_index ?? 0
+          order_index: char.order_index ?? 0,
+          world_id: worldId
         }])
       }
     }

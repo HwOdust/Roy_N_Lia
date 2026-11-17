@@ -8,86 +8,116 @@ import Characters from './pages/Characters'
 import World from './pages/World'
 import TimelinePage from './pages/TimelinePage'
 import Relations from './pages/Relations'
-import { supabase } from './supabase'
+import { supabase, getWorldSlug } from './supabase'
+import { WorldContext } from './WorldContext'
 import styles from './App.module.css'
 import Palette from './pages/Palette'
 import Playlist from './pages/Playlist'
 
 export default function App() {
+  const [user, setUser] = useState(null)
+  const [worldId, setWorldId] = useState(null)
   const [characters, setCharacters] = useState([])
   const [worldCards, setWorldCards] = useState([])
   const [timelineEvents, setTimelineEvents] = useState([])
   const [selectedChar, setSelectedChar] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
-  const [editMode, setEditMode] = useState(() => sessionStorage.getItem('editMode') === 'true')
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
-  const [passwordInput, setPasswordInput] = useState('')
-  const [passwordError, setPasswordError] = useState(false)
+  const [editMode, setEditMode] = useState(false)
   const [timelineSettings, setTimelineSettings] = useState({ start_year: 0, end_year: 1000, zoom: 1 })
   const [paletteTags, setPaletteTags] = useState([])
   const [playlist, setPlaylist] = useState([])
   const [homeSettings, setHomeSettings] = useState({
-  hero_title: 'A world of my own making',
-  hero_sub: '이름 없는 세계 속, 이름을 가진 존재들에 대한 기록.',
-  hero_image_url: null,
-  hero_image_opacity: 0.5
-})
+    hero_title: 'A world of my own making',
+    hero_sub: '이름 없는 세계 속, 이름을 가진 존재들에 대한 기록.',
+    hero_image_url: null,
+    hero_image_opacity: 0.5
+  })
 
-  useEffect(() => { fetchData() }, [])
+  // 로그인 상태 감지
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (!session) setEditMode(false)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
-async function fetchData() {
-  const { data: chars } = await supabase.from('characters').select('*').order('order_index')
-  const { data: worlds } = await supabase.from('world_cards').select('*').order('order_index')
-  const { data: events } = await supabase.from('timeline_events').select('*').order('x_offset')
-  const { data: settings } = await supabase.from('timeline_settings').select('*').limit(1).single()
-  const { data: palette } = await supabase.from('palette_tags').select('*').order('order_index')
-  const { data: playlistData } = await supabase.from('playlist').select('*').order('order_index')
-  const { data: homeSettings } = await supabase.from('home_settings').select('*').limit(1).single()
-  if (chars) setCharacters(chars)
-  if (worlds) setWorldCards(worlds)
-  if (events) setTimelineEvents(events)
-  if (settings) setTimelineSettings(settings)
-  if (palette) setPaletteTags(palette)
-  if (playlistData) setPlaylist(playlistData)
-  if (homeSettings) setHomeSettings(homeSettings)
-}
+  // 세계관 로드
+  useEffect(() => {
+    const slug = getWorldSlug()
+    supabase.from('worlds').select('id').eq('slug', slug).single()
+      .then(({ data }) => {
+        if (data) setWorldId(data.id)
+      })
+  }, [])
 
-  function handleEditClick() {
-    if (editMode) {
-      setEditMode(false)
-      sessionStorage.setItem('editMode', 'false')
-    } else {
-      setShowPasswordModal(true)
-      setPasswordInput('')
-      setPasswordError(false)
-    }
+  useEffect(() => {
+    if (worldId) fetchData()
+  }, [worldId])
+
+  async function fetchData() {
+    if (!worldId) return
+    const { data: chars } = await supabase.from('characters').select('*').eq('world_id', worldId).order('order_index')
+    const { data: worlds } = await supabase.from('world_cards').select('*').eq('world_id', worldId).order('order_index')
+    const { data: events } = await supabase.from('timeline_events').select('*').eq('world_id', worldId).order('x_offset')
+    const { data: settings } = await supabase.from('timeline_settings').select('*').eq('world_id', worldId).limit(1).single()
+    const { data: palette } = await supabase.from('palette_tags').select('*').eq('world_id', worldId).order('order_index')
+    const { data: playlistData } = await supabase.from('playlist').select('*').eq('world_id', worldId).order('order_index')
+    const { data: hs } = await supabase.from('home_settings').select('*').eq('world_id', worldId).limit(1).single()
+    if (chars) setCharacters(chars)
+    if (worlds) setWorldCards(worlds)
+    if (events) setTimelineEvents(events)
+    if (settings) setTimelineSettings(settings)
+    if (palette) setPaletteTags(palette)
+    if (playlistData) setPlaylist(playlistData)
+    if (hs) setHomeSettings(hs)
   }
 
-  function handlePasswordSubmit() {
-    if (passwordInput === import.meta.env.VITE_EDIT_PASSWORD) {
-      setEditMode(true)
-      sessionStorage.setItem('editMode', 'true')
-      setShowPasswordModal(false)
-    } else {
-      setPasswordError(true)
-    }
+  async function handleLogin(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    return error
   }
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    setEditMode(false)
+  }
+
+  // 로그인한 유저가 이 세계관 주인인지 확인
+  const isOwner = user && worldId
+    ? (() => {
+        // worlds 테이블의 owner_email과 비교는 별도 체크 없이
+        // Supabase Auth 로그인 자체가 주인임을 증명
+        return true
+      })()
+    : false
 
   return (
+    <WorldContext.Provider value={worldId}>
     <div>
-      <Navbar editMode={editMode} onEditClick={handleEditClick} />
+      <Navbar
+        editMode={editMode}
+        onEditClick={() => setEditMode(v => !v)}
+        user={user}
+        isOwner={isOwner}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+      />
 
       <Routes>
-<Route path="/" element={
-  <Home
-    characters={characters}
-    worldCards={worldCards}
-    timelineEvents={timelineEvents}
-    homeSettings={homeSettings}
-    editMode={editMode}
-    onUpdate={fetchData}
-  />
-} />
+        <Route path="/" element={
+          <Home
+            characters={characters}
+            worldCards={worldCards}
+            timelineEvents={timelineEvents}
+            homeSettings={homeSettings}
+            editMode={editMode}
+            onUpdate={fetchData}
+          />
+        } />
         <Route path="/characters" element={
           <Characters
             characters={characters}
@@ -106,75 +136,56 @@ async function fetchData() {
             characters={characters}
             editMode={editMode}
             onEdit={setSelectedEvent}
-onAdd={(x) => setSelectedEvent({ _new: true, initialX: x })}
+            onAdd={(x) => setSelectedEvent({ _new: true, initialX: x })}
             onUpdate={fetchData}
           />
         } />
-<Route path="/relations" element={
-  <Relations characters={characters} />
-} />
-<Route path="/palette" element={
-  <Palette
-    paletteTags={paletteTags}
-    characters={characters}
-    editMode={editMode}
-    onUpdate={fetchData}
-  />
-} />
-<Route path="/playlist" element={
-  <Playlist
-    characters={characters}
-    playlist={playlist}
-    editMode={editMode}
-    onUpdate={fetchData}
-  />
-} />
+        <Route path="/relations" element={
+          <Relations characters={characters} />
+        } />
+        <Route path="/palette" element={
+          <Palette
+            paletteTags={paletteTags}
+            characters={characters}
+            editMode={editMode}
+            onUpdate={fetchData}
+          />
+        } />
+        <Route path="/playlist" element={
+          <Playlist
+            characters={characters}
+            playlist={playlist}
+            editMode={editMode}
+            onUpdate={fetchData}
+          />
+        } />
       </Routes>
 
       <footer className={styles.footer}>
         made with <span style={{ color: 'var(--purple)' }}>♡</span> — Unnamed World
       </footer>
 
-{selectedChar && (
-  <CharModal
-    char={selectedChar}
-    editMode={editMode}
-    paletteTags={paletteTags}
-    onClose={() => setSelectedChar(null)}
-    onUpdate={fetchData}
-  />
-)}
-
-{selectedEvent && (
-  <TimelineModal
-    event={selectedEvent}
-    characters={characters}
-    editMode={editMode}
-    paletteTags={paletteTags}
-    onClose={() => setSelectedEvent(null)}
-    onUpdate={fetchData}
-  />
-)}
-
-      {showPasswordModal && (
-        <div className={styles.modalBg} onClick={(e) => e.target === e.currentTarget && setShowPasswordModal(false)}>
-          <div className={styles.passwordModal}>
-            <p className={styles.passwordTitle}>편집 모드</p>
-            <input
-              className={styles.passwordInput}
-              type="password"
-              placeholder="비밀번호 입력"
-              value={passwordInput}
-              onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false) }}
-              onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
-              autoFocus
-            />
-            {passwordError && <p className={styles.passwordError}>비밀번호가 틀렸어요.</p>}
-            <button className={styles.passwordBtn} onClick={handlePasswordSubmit}>확인</button>
-          </div>
-        </div>
+      {selectedChar && (
+        <CharModal
+          char={selectedChar}
+          editMode={editMode}
+          paletteTags={paletteTags}
+          onClose={() => setSelectedChar(null)}
+          onUpdate={fetchData}
+        />
       )}
-      hi
+
+      {selectedEvent && (
+        <TimelineModal
+          event={selectedEvent}
+          characters={characters}
+          editMode={editMode}
+          paletteTags={paletteTags}
+          onClose={() => setSelectedEvent(null)}
+          onUpdate={fetchData}
+        />
+      )}
     </div>
+    </WorldContext.Provider>
   )
 }

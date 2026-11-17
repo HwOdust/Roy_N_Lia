@@ -3,6 +3,7 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import { SortableContext, rectSortingStrategy, arrayMove, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../supabase'
+import { useWorldId } from '../WorldContext'
 import styles from './Playlist.module.css'
 
 function getYoutubeId(url) {
@@ -59,6 +60,7 @@ function SongCard({ song, characters, editMode, onEdit, onDelete }) {
 }
 
 export default function Playlist({ characters, editMode, onUpdate }) {
+  const worldId = useWorldId()
   const [songs, setSongs] = useState([])
   const [filterChars, setFilterChars] = useState([])
   const [showAll, setShowAll] = useState(true)
@@ -129,7 +131,7 @@ export default function Playlist({ characters, editMode, onUpdate }) {
     if (editingSong) {
       await supabase.from('playlist').update(payload).eq('id', editingSong.id)
     } else {
-      await supabase.from('playlist').insert([{ ...payload, order_index: songs.length }])
+      await supabase.from('playlist').insert([{ ...payload, order_index: songs.length, world_id: worldId }])
     }
     setShowForm(false)
     fetchSongs()
