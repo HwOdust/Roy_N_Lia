@@ -2,8 +2,8 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 0 */6 * *'  # 6일마다 실행
-  workflow_dispatch:        # 수동 실행도 가능
+    - cron: '0 0 */3 * *'  # 3일마다
+  workflow_dispatch:
 
 jobs:
   ping:
@@ -12,7 +12,8 @@ jobs:
       - name: Ping Supabase
         run: |
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "${{ https://ejodleakdnzwnbimfxty.supabase.co/rest/v1/ }}/rest/v1/characters?select=id&limit=1" \
-            -H "apikey: ${{ sb_publishable_poNpQ-CvRwiCP3D8m-Qb-w_MWR0aT8j }}" \
-            -H "Authorization: Bearer ${{ sb_publishable_poNpQ-CvRwiCP3D8m-Qb-w_MWR0aT8j }}")
+            "${{ secrets.SUPABASE_URL }}/rest/v1/characters?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
           echo "Response status: $STATUS"
+          if [ "$STATUS" != "200" ]; then exit 1; fi
