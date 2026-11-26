@@ -1,6 +1,7 @@
+import useDragSensors from '../../useDragSensors'
 import { useState, useEffect, useRef } from 'react'
 import {
-  DndContext, closestCenter, PointerSensor, useSensor, useSensors
+  DndContext, closestCenter,
 } from '@dnd-kit/core'
 import {
   SortableContext, verticalListSortingStrategy, arrayMove, useSortable
@@ -128,7 +129,7 @@ export default function CharModal({ char, editMode, paletteTags, onClose, onUpda
   const colorBtnRef = useRef(null)
   const accentBtnRef = useRef(null)
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  const sensors = useDragSensors()
 
   useEffect(() => {
     if (!isNew && char) {

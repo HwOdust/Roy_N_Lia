@@ -1,5 +1,6 @@
+import useDragSensors from '../useDragSensors'
 import { useState, useEffect } from 'react'
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { DndContext, closestCenter } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy, arrayMove, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../supabase'
@@ -68,7 +69,7 @@ export default function Playlist({ characters, editMode, onUpdate }) {
   const [editingSong, setEditingSong] = useState(null)
   const [form, setForm] = useState({ title: '', artist: '', youtube_url: '', memo: '', characters: [] })
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  const sensors = useDragSensors()
 
   useEffect(() => { fetchSongs() }, [worldId])
 

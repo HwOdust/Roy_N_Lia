@@ -96,3 +96,7 @@
 
 .tooltipName { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
 .tooltipCode { font-size: 11px; color: var(--text3); font-family: monospace; }
+/* ===== 모바일 (768px 이하) ===== */
+@media (max-width: 768px) {
+  .wrap { padding: 1.25rem 1rem; }
+}

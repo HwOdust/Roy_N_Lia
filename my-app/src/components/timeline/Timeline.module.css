@@ -156,3 +156,40 @@
 }
 .pinBtn:hover { color: var(--text); }
 .pinActive { color: var(--purple) !important; }
+/* ===== 모바일 (768px 이하) ===== */
+@media (max-width: 768px) {
+  .wrap { padding: 1.25rem 1rem; }
+  .topRow { padding: 0; margin-bottom: 1rem; }
+  .filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+  .filters::-webkit-scrollbar { display: none; }
+  .filterBtn { flex-shrink: 0; }
+  .filterNote, .pinBtn, .hint { display: none; }
+  .mHint { font-size: 12px; color: var(--text3); margin-bottom: 0.75rem; }
+  .mDragging { z-index: 2; opacity: 0.85; }
+
+  .mList { position: relative; padding-left: 22px; }
+  .mList::before {
+    content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px;
+    width: 1px; background: var(--border2);
+  }
+  .mEmpty { font-size: 13px; color: var(--text3); padding: 1rem 0; }
+  .mItem {
+    position: relative; display: block; width: 100%;
+    text-align: left; background: none; border: none; padding: 0;
+    margin-bottom: 14px; cursor: pointer; color: inherit; font: inherit;
+    touch-action: manipulation; -webkit-touch-callout: none; user-select: none;
+  }
+  .mItem::before {
+    content: ""; position: absolute; left: -22px; top: 5px;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--c); box-shadow: 0 0 10px 2px color-mix(in srgb, var(--c) 40%, transparent);
+  }
+  .mDate { display: block; font-size: 12px; color: var(--text3); }
+  .mBox {
+    display: block; margin-top: 4px; padding: 10px 12px;
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-left: 2px solid var(--c); border-radius: 10px;
+  }
+  .mTitle { display: block; font-size: 14px; color: var(--text); }
+  .mChars { display: flex; flex-wrap: wrap; gap: 0 8px; font-size: 12px; margin-top: 2px; }
+}

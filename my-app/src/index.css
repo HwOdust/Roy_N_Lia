@@ -22,3 +22,13 @@ body {
   font-size: 15px;
   line-height: 1.6;
 }
+/* ===== 모바일 (768px 이하): 꾹 눌러 드래그할 때 이미지 저장/텍스트 선택 메뉴가 뜨지 않게 ===== */
+@media (max-width: 768px) {
+  [aria-roledescription="sortable"] {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  [aria-roledescription="sortable"] img { -webkit-user-drag: none; pointer-events: none; }
+}

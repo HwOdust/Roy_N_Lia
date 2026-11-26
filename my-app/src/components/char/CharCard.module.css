@@ -80,3 +80,8 @@
   border-color: var(--border2);
   transform: translateY(-2px);
 }
+/* ===== 모바일 (768px 이하): 터치 화면엔 hover가 없어서 이름을 항상 표시 ===== */
+@media (max-width: 768px) {
+  .overlay { opacity: 1; }
+  .card:hover { transform: none; }
+}

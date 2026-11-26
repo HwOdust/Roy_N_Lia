@@ -1,5 +1,6 @@
+import useDragSensors from '../useDragSensors'
 import {
-  DndContext, closestCenter, PointerSensor, useSensor, useSensors
+  DndContext, closestCenter,
 } from '@dnd-kit/core'
 import {
   SortableContext, rectSortingStrategy, arrayMove
@@ -9,9 +10,7 @@ import { supabase } from '../supabase'
 import styles from './Characters.module.css'
 
 export default function Characters({ characters, setCharacters, editMode, onCharClick, onUpdate }) {
-  const sensors = useSensors(useSensor(PointerSensor, {
-    activationConstraint: { distance: 8 }
-  }))
+  const sensors = useDragSensors()
 
   async function handleDragEnd(event) {
     const { active, over } = event

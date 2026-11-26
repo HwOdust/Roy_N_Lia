@@ -285,3 +285,12 @@
   color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
 }
 .btnDanger:hover { opacity: 0.85; }
+
+/* ===== 모바일 (768px 이하): 전체 화면으로 열기 ===== */
+@media (max-width: 768px) {
+  .bg { padding: 0; align-items: flex-start; }
+  .wrapper, .wrapperExpanded { width: 100%; max-width: 100%; flex-direction: column; gap: 0; }
+  .modal, .wrapperExpanded .modal { width: 100%; height: 100dvh; border-radius: 0; }
+  .panel { height: auto; border-radius: 0; }
+  .deleteModal { width: calc(100vw - 2rem); max-width: 320px; }
+}

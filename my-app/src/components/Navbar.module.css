@@ -95,3 +95,28 @@
 }
 .loginBtn:hover { opacity: 0.85; }
 .loginBtn:disabled { opacity: 0.5; cursor: default; }
+/* ===== 모바일 (768px 이하) ===== */
+.burger { display: none; }
+
+@media (max-width: 768px) {
+  .nav { padding: 0.75rem 1rem; }
+  .burger {
+    display: grid; place-items: center;
+    width: 40px; height: 40px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text); font-size: 22px;
+  }
+  .links {
+    display: none;
+    position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; align-items: stretch; gap: 0;
+    padding: 0.5rem 0 1rem;
+    background: var(--bg2);
+    border-bottom: 0.5px solid var(--border2);
+  }
+  .linksOpen { display: flex; }
+  .links a { padding: 0.8rem 1.25rem; font-size: 15px; }
+  .divider { width: auto; height: 0.5px; margin: 0.5rem 1.25rem; }
+  .links button { align-self: flex-start; margin: 0.25rem 1.25rem; }
+  .loginModal { width: calc(100vw - 2rem); max-width: 320px; }
+}

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import styles from './Navbar.module.css'
 
 export default function Navbar({ editMode, onEditClick, user, isOwner, worldName, onLogin, onLogout, onWorldChange }) {
@@ -8,6 +8,11 @@ export default function Navbar({ editMode, onEditClick, user, isOwner, worldName
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const location = useLocation()
+
+  // 페이지를 옮기면 모바일 메뉴 닫기
+  useEffect(() => { setMenuOpen(false) }, [location.pathname])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -28,7 +33,15 @@ export default function Navbar({ editMode, onEditClick, user, isOwner, worldName
     <>
       <nav className={styles.nav}>
         <NavLink to="/" className={styles.logo}>{worldName || 'Unnamed World'}</NavLink>
-        <div className={styles.links}>
+        <button
+          className={styles.burger}
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label={menuOpen ? '메뉴 닫기' : '메뉴 열기'}
+          aria-expanded={menuOpen}
+        >
+          <i className={`ti ${menuOpen ? 'ti-x' : 'ti-menu-2'}`} aria-hidden="true" />
+        </button>
+        <div className={`${styles.links} ${menuOpen ? styles.linksOpen : ''}`}>
           <NavLink to="/characters" className={({ isActive }) => isActive ? styles.activeLink : ''}>Characters</NavLink>
           <NavLink to="/world" className={({ isActive }) => isActive ? styles.activeLink : ''}>World</NavLink>
           <NavLink to="/timeline" className={({ isActive }) => isActive ? styles.activeLink : ''}>Timeline</NavLink>
@@ -51,7 +64,7 @@ export default function Navbar({ editMode, onEditClick, user, isOwner, worldName
           {user ? (
             <button className={styles.authBtn} onClick={onLogout}>로그아웃</button>
           ) : (
-            <button className={styles.authBtn} onClick={() => setShowLogin(true)}>로그인</button>
+            <button className={styles.authBtn} onClick={() => { setShowLogin(true); setMenuOpen(false) }}>로그인</button>
           )}
         </div>
       </nav>

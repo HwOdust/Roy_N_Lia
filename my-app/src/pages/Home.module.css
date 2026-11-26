@@ -163,3 +163,9 @@
   border: 0.5px solid var(--border2); cursor: pointer;
   background: none; padding: 2px;
 }
+/* ===== 모바일 (768px 이하) ===== */
+@media (max-width: 768px) {
+  .inner { padding: 1.25rem 1rem; }
+  .hero { height: 260px; padding: 2.5rem 1rem 2rem; margin-bottom: 1.5rem; }
+  .grid { grid-template-columns: 1fr; }
+}

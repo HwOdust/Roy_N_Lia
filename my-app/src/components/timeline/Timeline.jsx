@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import styles from './Timeline.module.css'
+import useIsMobile from '../../useIsMobile'
+import MobileTimelineList from './MobileTimelineList'
 
 export default function Timeline({ events, characters, editMode, onEdit, onAdd, onUpdate, settings, onSettingsUpdate }) {
   const [hoveredId, setHoveredId] = useState(null)
@@ -13,6 +15,7 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
   const containerRef = useRef(null)
   const draggingRef = useRef(null)
   const [pinAll, setPinAll] = useState(false)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     if (settings) setLocalSettings(settings)
@@ -216,13 +219,22 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
 
 
           {editMode && (
-            <button className={styles.addBtn} onClick={() => onAdd(-offset + (containerRef.current?.offsetWidth || 800) - PADDING)}>
+            <button className={styles.addBtn} onClick={() => onAdd(isMobile ? maxXOffset + 100 : -offset + (containerRef.current?.offsetWidth || 800) - PADDING)}>
               <i className="ti ti-plus" aria-hidden="true" /> 사건 추가
             </button>
           )}
         </div>
       </div>
 
+      {isMobile ? (
+        <MobileTimelineList
+          events={filtered}
+          characters={characters}
+          editMode={editMode}
+          onEdit={onEdit}
+          onUpdate={onUpdate}
+        />
+      ) : (
       <div className={styles.timelineRow}>
         <button className={styles.arrow} onClick={() => handleArrow('left')}>
           <i className="ti ti-chevron-left" aria-hidden="true" />
@@ -329,6 +341,7 @@ export default function Timeline({ events, characters, editMode, onEdit, onAdd, 
           <i className="ti ti-chevron-right" aria-hidden="true" />
         </button>
       </div>
+      )}
       {editMode && <p className={styles.hint}>편집 모드에서 점을 드래그해서 자유롭게 움직일 수 있어요.</p>}
     </div>
   )
